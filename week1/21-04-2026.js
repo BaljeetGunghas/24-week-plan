@@ -187,6 +187,8 @@ const array4 = [0, 1, 0, 3, 12];
 // * **Problem:** Find the index where the sum of numbers to the left is equal to the sum of numbers to the right.
 // * **Example:** `[1, 7, 3, 6, 5, 6]` $\rightarrow$ Index 3 is the pivot because $1+7+3 = 11$ and $5+6 = 11$.
 // * **Goal:** Solve this in $O(n)$ time.
+
+// ------------
 // const pivotArr = [1, 7, 3, 6, 5, 6];
 // function findPivotIndex(arr) {
 //   if (arr.length < 1) {
@@ -208,6 +210,26 @@ const array4 = [0, 1, 0, 3, 12];
 //   }
 
 //   return 0;
+// }
+
+// ---------------------beter approch
+// const pivotArr = [1, 7, 3, 6, 5, 6];
+
+// function findPivotIndex(arr) {
+//   let totalsum = 0;
+//   for (let i = 0; i < arr.length; i++) {
+//     totalsum += arr[i];
+//   }
+
+//   let leftsum = 0;
+//   for (let i = 0; i < arr.length; i++) {
+//     const rightsum = totalsum - leftsum - arr[i];
+//     if (leftsum === rightsum) {
+//       return i;
+//     }
+//     leftsum += arr[i];
+//   }
+//   return null;
 // }
 
 // console.log(findPivotIndex(pivotArr));
