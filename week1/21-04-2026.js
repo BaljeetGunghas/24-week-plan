@@ -130,13 +130,13 @@ const array4 = [0, 1, 0, 3, 12];
 
 // Visualizing the TDZ
 // JavaScript
-// { 
+// {
 //   // --- START OF TDZ ---
 //   // console.log(user); // ❌ ReferenceError!
 //   // --- STILL IN TDZ ---
-  
+
 //   let user = "Baljeet"; // ✨ TDZ ENDS HERE
-  
+
 //   console.log(user); // ✅ Works! Logs "Baljeet"
 // }
 //.
@@ -165,7 +165,7 @@ const array4 = [0, 1, 0, 3, 12];
 // let x = "Global";
 
 // function checkScope() {
-//     console.log(x); 
+//     console.log(x);
 //     let x = "Local";
 // }
 // checkScope();
@@ -173,9 +173,6 @@ const array4 = [0, 1, 0, 3, 12];
 
 // Question 3: The Call Stack vs. Memory
 // What happens to the Call Stack if you call a function that calls itself (recursion) without an exit condition? What is the specific error message you usually see in the browser?
-
-
-
 
 // ---
 
@@ -190,12 +187,50 @@ const array4 = [0, 1, 0, 3, 12];
 // * **Problem:** Find the index where the sum of numbers to the left is equal to the sum of numbers to the right.
 // * **Example:** `[1, 7, 3, 6, 5, 6]` $\rightarrow$ Index 3 is the pivot because $1+7+3 = 11$ and $5+6 = 11$.
 // * **Goal:** Solve this in $O(n)$ time.
+// const pivotArr = [1, 7, 3, 6, 5, 6];
+// function findPivotIndex(arr) {
+//   if (arr.length < 1) {
+//     return "Array should have some no.";
+//   }
+//   let prefSum = [];
+//   prefSum[0] = arr[0];
+//   for (let i = 1; i < arr.length; i++) {
+//     prefSum[i] = prefSum[i - 1] + arr[i];
+//   }
+
+//   for (let i = 1; i < arr.length; i++) {
+//     const leftsum = prefSum[i - 1];
+//     const rightsum = prefSum[prefSum.length-1] - prefSum[i];
+
+//     if (leftsum === rightsum) {
+//       return i;
+//     }
+//   }
+
+//   return 0;
+// }
+
+// console.log(findPivotIndex(pivotArr));
 
 // #### **3. Running Sum of 1D Array (LeetCode #1480)**
 // * **Problem:** Given an array `nums`, return the running sum as `[nums[0], nums[0]+nums[1], ...]`.
 // * **Goal:** Try to do this **in-place** (Space Complexity $O(1)$) by modifying the original array instead of creating a new `prefArray`.
 
 // **Input:** `nums = [1, 2, 3, 4]`
+
+// let runArr = [3, 1, 2, 10, 1];
+// // Target Output: [3, 4, 6, 16, 17]
+// function getRuningArr(arr) {
+//   for (let i = 1; i < arr.length; i++) {
+//     arr[i] = arr[i - 1] + arr[i];
+//   }
+//   return arr;
+// }
+
+// // time complexity will be o(n)
+// // space complexity will be o(1)
+
+// console.log(getRuningArr(runArr));
 
 // * **Step 1:** Leave `nums[0]` as it is. (`1`)
 // * **Step 2:** `nums[1]` becomes `nums[0] + nums[1]` $\rightarrow$ $1 + 2 = \mathbf{3}$
