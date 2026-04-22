@@ -176,12 +176,35 @@ const array4 = [0, 1, 0, 3, 12];
 
 // ---
 
+// function recursive() {
+//   return recursive();
+// }
+// console.log(recursive()); // This will cause a "Maximum call stack size exceeded" error due to infinite recursion. 
+
 // ### **Homework: Prefix Sum Level 1 Challenge**
 
 // #### **1. Range Sum Query (The Classic)**
 // * **Problem:** Given an array `nums` and multiple queries of the form `(i, j)`, return the sum of elements from index `i` to `j` (inclusive).
 // * **Goal:** Use your `prefixSum` array to answer each query in **$O(1)$** time.
 // * **Formula Hint:** $Sum(i, j) = Prefix[j] - Prefix[i - 1]$.
+// example: `nums = [1, 2, 3, 4]` and query `(1, 3)` $\rightarrow$ Output: `2 + 3 + 4 = 9` (using prefix sums).
+
+// time complexity will be O(N) for preprocessing the prefix sum array, and O(1) for each query after that.
+// space complexity will be O(N) for the prefix sum array.
+
+// better approach will be to use the original array to store the prefix sums, which can reduce space complexity to O(1) if we are allowed to modify the input array.
+
+// but can we calculate without using prefix sum array? yes we can calculate the sum of a range by iterating through the elements from index i to j and summing them up, but that would take O(n) time for each query, which is less efficient than using a prefix sum array.
+// but the time and space complexity will be O(1) for each query if we are allowed to modify the input array to store the prefix sums, and O(n) for preprocessing the prefix sum array.
+// so what is the difference between using a modified input array and loop for each query? the difference is that using a modified input array allows us to answer each query in O(1) time after an initial O(n) preprocessing step, while looping through the elements for each query would result in O(n) time for each query, which can be inefficient if there are many queries.
+
+// for(let k = i; k <= j; k++) {
+//   sum += nums[k];
+// }
+
+// this will calculate the sum of the range from index i to j in O(n) time for each query, which is less efficient than using a prefix sum array that allows us to answer each query in O(1) time after an initial O(n) preprocessing step.
+
+
 
 // #### **2. Find the Pivot Index (Equilibrium Point)**
 // * **Problem:** Find the index where the sum of numbers to the left is equal to the sum of numbers to the right.
@@ -286,3 +309,42 @@ const array4 = [0, 1, 0, 3, 12];
 // **The Highest Altitude:** **$0$** (because you never went above the starting point).
 
 // ---
+
+// so first we have to claculate the prefix sum of the array and then we have to retrun max element from that array which will be the highest altitude reached by the biker.
+
+// const gain = [-5, 1, 5, 0, -7];  
+
+// function findHighestAlt(gain) {
+//   let prefSum = [];
+//   prefSum[0] = gain[0];
+//   for (let i = 1; i < gain.length; i++) {
+//     prefSum[i] = prefSum[i - 1] + gain[i];
+//   }
+
+//   let max = -Infinity;
+//   for (let i = 0; i < prefSum.length; i++) {
+//     if (prefSum[i] > max) {
+//       max = prefSum[i];
+//     }
+//   }
+//   return max;
+// }
+
+// better approach will be to calculate the prefix sum and max at the same time without using extra space for prefix sum array.
+
+// const gain = [-5, 1, 5, 0, -7];
+
+// function findHighestAlt(gain) {
+//   let max = 0;
+//   let currentAlt = 0;  
+//   for (let i = 0; i < gain.length; i++) {
+//     currentAlt += gain[i]; // Update the current altitude based on the gain
+//     if (currentAlt > max) { // Check if the current altitude is the highest so far
+//       max = currentAlt;
+//     }
+//   }
+//   return max;
+// }  
+
+// console.log(findHighestAlt(gain));
+
