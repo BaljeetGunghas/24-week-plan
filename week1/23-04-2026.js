@@ -48,5 +48,19 @@
 // // SC : O(1)
 // console.log(reverseString(str));
 
+// function createGame() {
+//   let score = 0;
 
+//   return {
+//     gainPoints: () => {
+//       score++;
+//       return score;
+//     },
+//   };
+// }
 
+// const game = createGame();
+
+// const gainPoints = game.gainPoints;
+
+// console.log(gainPoints());
