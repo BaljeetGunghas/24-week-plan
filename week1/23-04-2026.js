@@ -64,3 +64,32 @@
 // const gainPoints = game.gainPoints;
 
 // console.log(gainPoints());
+
+// function findMiddle(arr) {
+//   let slow = 0;
+//   let fast = 0;
+
+//   while (fast < arr.length - 2 || fast < arr.length-1) {
+//     slow++;
+//     fast += 2;
+//   }
+
+//   return arr[slow];
+// }
+
+// console.log(findMiddle([1, 2, 3, 4, 5])); // Should return 3
+// console.log(findMiddle([1, 2, 3, 4, 5, 6])); // Should return 4
+
+// correct approch --------------------------
+// function findMiddle(arr) {
+//   let slow = 0;
+//   let fast = 0;
+
+//   // As long as fast can move 2 steps, keep going
+//   while (fast < arr.length && arr[fast + 1] !== undefined) {
+//     slow++;
+//     fast += 2;
+//   }
+
+//   return arr[slow];
+// }
