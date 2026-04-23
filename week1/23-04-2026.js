@@ -93,3 +93,72 @@
 
 //   return arr[slow];
 // }
+
+// ---------------------------------------------
+
+// // console.log("1");
+
+// // setTimeout(() => {
+// //   console.log("2");
+// // }, 0);
+
+// // Promise.resolve().then(() => {
+// //   console.log("3");
+// // });
+
+// // console.log("4");
+
+// // so for this output will be 
+
+// // 1
+// // 4
+// // 3
+// // 2
+
+// // 1 and 4 will execute imediately while 2 and 3 will are async task so they will be added in seprate queue 
+// // 2 will be added in task queue 
+// // and 3 will be added in the microtask queue 
+// // so when call stack is empty then first it will check microtask queue and it will execute 3 then it will check for task queue so that will be the order 
+
+// // as you mention 
+// // Task Queue (Macrotasks): setTimeout, setInterval, setImmediate.
+
+// // Microtask Queue (VIPs): Promises (.then, .catch, .finally) and MutationObserver.
+
+
+// let str1= "racecar"
+// let str2 = "hello"
+// let str3 = "a"
+// let str4 = ""
+// let str5 = "ab"
+// let str6 = "Ama"
+
+
+// function checkPalindrom(str){
+//     if(str.length === 0 || str.length === 1){
+//         return true
+//     }
+//     let left = 0
+//     let right = str.length-1;
+
+//     while (left < right){
+//         let leftChar = str.charAt(left).toLowerCase()
+//         let rightChar = str.charAt(right).toLowerCase() 
+        
+//         if(leftChar !== rightChar){
+//             return false 
+//         }
+
+//         left++
+//         right--
+//     }
+
+//     return true
+// }
+
+// console.log(checkPalindrom(str1)) // true
+// console.log(checkPalindrom(str2)) // false
+// console.log(checkPalindrom(str3)) // true
+// console.log(checkPalindrom(str4)) // true
+// console.log(checkPalindrom(str5)) // false
+// console.log(checkPalindrom(str6)) // true
