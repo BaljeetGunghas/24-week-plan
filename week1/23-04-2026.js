@@ -162,3 +162,88 @@
 // console.log(checkPalindrom(str4)) // true
 // console.log(checkPalindrom(str5)) // false
 // console.log(checkPalindrom(str6)) // true
+
+
+// -----------------------------------------
+
+// The Final Boss Challenge of Day 4
+// Since we still have about 20 minutes before our 11:30 PM cutoff, I want to give you one tiny "Advanced Two-Pointer" puzzle. It’s a very slight variation of what you just did.
+
+// Problem: Valid Palindrome II
+
+// Given a string, you can delete at most one character. Can you still make it a palindrome?
+
+// Input: "aba" → Output: true (already a palindrome)
+
+// Input: "abca" → Output: true (you can delete 'b' to get "aca" or 'c' to get "aba")
+
+// Input: "abcde" → Output: false
+
+// Think about the logic:
+// When your pointers left and right find a mismatch (e.g., 'b' vs 'c' in "abca"), you have two choices:
+
+// Try skipping the left character and check if the rest is a palindrome.
+
+// Try skipping the right character and check if the rest is a palindrome.
+
+// Don't worry about writing the full code for this one tonight unless you really want to. Instead, just tell me: How would you use the checkPalindrom function you already wrote to solve this? Just explain the logic in 2–3 sentences. This is how you show an interviewer you can "reuse" code efficiently.
+
+
+// -----------------my input -----------------
+// yes sure so here in the above question first 
+// we will create a new variable called count with value 0
+// in first if condion we will check if leftchar !== rightchar 
+// if(count ===1) return false 
+
+
+// then we will compair str.charAt(left +1) === rightchar || str.charAt(right- 1) === leftchar
+// count++
+// else return false 
+
+// out of the loop if its work fine then return true
+
+// ------------------my input end-----------------
+
+// optimal solution
+// The Optimized Logic
+// When you hit a mismatch (str[left] !== str[right]):
+
+// Option A: Check if the substring from left + 1 to right is a palindrome.
+
+// Option B: Check if the substring from left to right - 1 is a palindrome.
+
+// If either one is true, the whole thing is true.
+
+// function validPalindromeII(s) {
+//     let left = 0;
+//     let right = s.length - 1;
+
+//     while (left < right) {
+//         if (s[left] !== s[right]) {
+//             // Check both possibilities: skip left or skip right
+//             return isPalindrome(s, left + 1, right) || isPalindrome(s, left, right - 1);
+//         }
+//         left++;
+//         right--;
+//     }   
+//     return true; // If we made it through the loop, it's already a palindrome
+// }
+
+// function isPalindrome(str, left, right) {
+//     while (left < right) {
+//         if (str[left] !== str[right]) {
+//             return false;
+//         }
+//         left++;
+//         right--;
+//     }
+//     return true;
+// }
+
+// console.log(validPalindromeII("aba")); // true
+// console.log(validPalindromeII("abca")); // true
+// console.log(validPalindromeII("abcde")); // false
+
+// time complexity : O(N) where N is the length of the string, because in the worst case we might have to check the entire string once for the initial palindrome check and once more for the substring check.
+
+// Space complexity : O(1) because we are using only a constant amount of extra space for the pointers and the count variable.
