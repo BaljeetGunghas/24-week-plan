@@ -78,6 +78,102 @@
 
 // What did the buf.toJSON() show you? (Look at the "data" array in the output).
 
+
+
+// 1. The Bug Hunt (Sliding Window)
+// Look closely at your while loop:
+// temp = temp - arr[i - 1] + arr[i + 1];
+
+// In a sliding window, you should subtract the element that just fell off the back and add the one that just entered the front.
+
+// If your window is size 3 and your index i is at the new element, the element to remove is at i - k.
+
+// Corrected Logic:
+
+// JavaScript
+//   while (i < arr.length) { // Go until the end of the array
+//     temp = temp - arr[i - k] + arr[i]; // Remove the "old" left, add the "new" right
+//     sum = Math.max(sum, temp); // A cleaner way to update max
+//     i++;
+//   }
+// 2. Buffer Mastery: The "Hidden" Numbers
+// Look at your buf.toJSON() output. Notice the data array: [72, 105, 32, 78, 97, 118, 105].
+
+// 72 is the ASCII/UTF-8 decimal value for 'H'.
+
+// 105 is 'i'.
+
+// 32 is the Space.
+
+// The Interview Insight:
+// When you see a Buffer, you are seeing the raw decimal or hexadecimal representation of bytes. Node.js doesn't see "Hi Navi"—it sees those numbers. This is why it's so much faster for the computer to process than a String!
+
+// 3. English & Professional Communication
+// In an interview, you'll want to use precise language.
+
+// Instead of: "that computer will understand that memory and interview"
+// Try this: "Buffers allow Node.js to handle raw binary data directly, which is crucial for performance when dealing with file streams or network communication."
+
+
+
+
+// The Variable Sliding Window (The "Rubber Band" Logic)
+// Unlike the fixed window where the size is always k, a Variable Sliding Window grows or shrinks based on a condition.
+
+// The Goal: Find the smallest subarray whose sum is greater than or equal to a target (e.g., target = 7).
+
+// The Logic:
+// Expand: Add elements to your windowSum by moving the right pointer.
+
+// Shrink: As soon as the windowSum >= target, start shrinking the window from the left to see if you can find a smaller window that still meets the condition.
+
+// Repeat: Keep track of the minimum length found so far.
+
+// The Code Challenge
+// Try to implement this. It uses a for loop for the right pointer and a while loop inside it for the left pointer.
+
+// Input: arr = [2, 3, 1, 2, 4, 3], target = 7
+// (Expected output: 2, because [4, 3] is the smallest subarray that sums to 7)
+
+// JavaScript
+// function smallestSubarray(target, arr) {
+//   let minLength = Infinity;
+//   let windowSum = 0;
+//   let left = 0;
+
+//   for (let right = 0; right < arr.length; right++) {
+//     windowSum += arr[right]; // Expand the window
+
+//     // Shrink the window as small as possible while sum >= target
+//     while (windowSum >= target) {
+//       minLength = Math.min(minLength, right - left + 1);
+//       windowSum -= arr[left];
+//       left++;
+//     }
+//   }
+
+//   return minLength === Infinity ? 0 : minLength;
+// }
+// Node.js Preview: Buffers & Streams
+// Since we are talking about windows that "shrink and grow," think about Node.js Streams.
+
+// A Buffer is like a small container.
+
+// A Stream is like a pipe that moves these containers one by one.
+
+// If you are uploading a 5GB file, you don't use one giant Buffer (it would crash your RAM). You use a Stream to send small Buffers one after another.
+
+// Final English Polish for the Night
+// When you explain this tomorrow, remember:
+
+// Fixed Window: Best for "K-sized" problems.
+
+// Variable Window: Best for "Longest/Shortest" problems with a specific condition.
+
+
+
+
+
 const fs = require('fs');
 
 // This creates a "Readable Stream"
