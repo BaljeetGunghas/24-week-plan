@@ -193,3 +193,59 @@
 
 // console.log("Longest length is:", longestSubArray(target, arr)); 
 // Output: 3 (Subarray [1, 2, 1] or [2, 1, 2])
+
+// .
+// .
+// .
+// .
+// .
+// .
+// .
+// .
+// .
+// .
+// .
+//"Why is it better to use a Stream to read a 2GB CSV file instead of fs.readFile (which uses a Buffer)?"
+
+// Using a stream for a 2GB CSV file is a better approach because it processes the data in small chunks rather than loading the entire file into memory at once, preventing application crashes and performance bottlenecks.
+
+
+// Here is why streaming is superior to fs.readFile for large files:
+
+// Memory Efficiency: fs.readFile attempts to load the full 2GB into your RAM. If your system or container has less than 2GB of available memory, or if you hit Node.js's default buffer limit, the application will throw an "Out of Memory" error and crash. Streams only keep a tiny "chunk" (typically 64KB) in memory at any given time.
+
+// Time to First Byte: With fs.readFile, your code must wait for the entire 2GB to be read from the disk before you can start processing the first row. Streams allow you to start processing the data as soon as the first chunk is available, making the app feel much faster.
+
+
+// Backpressure Handling:
+//  Streams can handle "backpressure," meaning if your data processing (like saving to a database) is slower than the disk reading, the stream will automatically pause the read operation to prevent memory buildup.
+
+
+//  Scalability: A streaming approach works exactly the same whether the file is 2MB, 2GB, or 200GB. fs.readFile is inherently unscalable because it is tied directly to the amount of physical RAM available.
+
+
+// Using the popular csv-parser library (which is highly efficient for streaming), here is how you would process that 2GB file:
+// const fs = require('fs');
+// const csv = require('csv-parser');
+// // 1. Create a readable stream for the 2GB file
+// // This does NOT load the file into memory.
+// const readStream = fs.createReadStream('large-file.csv');
+
+// // 2. Pipe the read stream into the csv parser  
+// readStream.pipe(csv())
+//   .on('data', (row) => {
+//     // This callback is called for each row of the CSV as it is read.
+//     console.log('Received a new row:', row);
+//     // You can process the row here (e.g., save to database)
+//   })
+//   .on('end', () => {
+//     console.log('Finished processing the CSV file.');
+//   })
+//   .on('error', (err) => {
+//     console.error('An error occurred:', err);
+//   });
+
+// Why this works in JavaScript:
+// Event-Driven: The 'data' event fires every time a small piece of the file is ready. Your script "reacts" to the data rather than "holding" it.
+// Garbage Collection: Once a row is processed in the 'data' callback and the function finishes, that object becomes eligible for garbage collection, keeping your RAM usage flat.
+// Non-Blocking: Because it's asynchronous, your Node.js process can still handle other requests or tasks while the file is being read in the background.
