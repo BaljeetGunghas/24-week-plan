@@ -198,4 +198,9 @@
 //   console.log('--- Received a new chunk (Buffer) ---');
 //   console.log(chunk.length); // See the size of the "window"
 // });
-// The Challenge for You:Write the code for the smallestSubarraySum problem.English Practice: Explain in one sentence why we use a while loop inside the for loop for the variable window.
+
+
+// The Challenge for You:
+
+// Write the code for the smallestSubarraySum problem.
+// English Practice: Explain in one sentence why we use a while loop inside the for loop for the variable window.
