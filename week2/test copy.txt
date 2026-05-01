@@ -1,0 +1,12 @@
+Explane What is a Stream?
+A Stream is a powerful abstraction in Node.js that allows you to read or write data piece by piece, rather than all at once. This is especially useful for handling large files or data sources without consuming a lot of memory.
+
+ Think of a Stream like a water pipe. Instead of filling a bucket (Buffer) with water (data) all at once, you can turn on the tap and let the water flow in small, manageable amounts. This way, you can process the data as it arrives without needing to store it all in memory.
+
+What are the Types of Streams in Node.js?
+1. Readable Streams: These are used for reading data. Examples include fs.createReadStream() for files and http.IncomingMessage for HTTP requests.
+2. Writable Streams: These are used for writing data. Examples include fs.createWriteStream() for files and http.ServerResponse for HTTP responses.
+3. Duplex Streams: These can be both readable and writable. An example is a net.Socket, which can send and receive data over a network.
+4. Transform Streams: These are a type of duplex stream that can modify or transform the data as it is read or written. An example is zlib.createGzip() for compressing data.
+
+ - Processed by Baljeet
