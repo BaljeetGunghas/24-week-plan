@@ -3,70 +3,70 @@ const path = require("path");
 const fs = require("fs");
 const Busboy = require("busboy");
 
-const server = http.createServer((req, res) => {
-  if (req.method === "POST") {
-    // Initialize Busboy with the request headers
-    const busboy = Busboy({ headers: req.headers });
+// const server = http.createServer((req, res) => {
+//   if (req.method === "POST") {
+//     // Initialize Busboy with the request headers
+//     const busboy = Busboy({ headers: req.headers });
 
-    // This event fires as soon as a file field is detected in the stream
-    busboy.on("file", (name, file, info) => {
-      const { filename, encoding, mimeType } = info;
-      console.log(`[Stream Start] Uploading: ${filename}`);
+//     // This event fires as soon as a file field is detected in the stream
+//     busboy.on("file", (name, file, info) => {
+//       const { filename, encoding, mimeType } = info;
+//       console.log(`[Stream Start] Uploading: ${filename}`);
 
-      // 1. Immediate Validation
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "application/pdf",
-        "text/plain",
-        "video/mp4",
-      ];
+//       // 1. Immediate Validation
+//       const allowedTypes = [
+//         "image/jpeg",
+//         "image/png",
+//         "application/pdf",
+//         "text/plain",
+//         "video/mp4",
+//       ];
 
-      if (!allowedTypes.ncludes(mimeType)) {
-        console.error(
-          `[Security Alert] Rejected invalid file type: ${mimeType}`,
-        );
+//       if (!allowedTypes.ncludes(mimeType)) {
+//         console.error(
+//           `[Security Alert] Rejected invalid file type: ${mimeType}`,
+//         );
 
-        // 2. IMPORTANT: Consume the stream without saving it or resume it
-        // This effectively "throws away" the data as it arrives so the server doesn't hang
-        file.resume();
+//         // 2. IMPORTANT: Consume the stream without saving it or resume it
+//         // This effectively "throws away" the data as it arrives so the server doesn't hang
+//         file.resume();
 
-        //         Why file.resume() is important:
-        // In Node.js streams, if you don't "consume" the data (by piping it somewhere or calling .resume()), the stream stays "paused." The connection will stay open forever, and your server will eventually run out of available sockets. Calling file.resume() tells Node: "I don't want this data, just let it flow into the void."
+//         //         Why file.resume() is important:
+//         // In Node.js streams, if you don't "consume" the data (by piping it somewhere or calling .resume()), the stream stays "paused." The connection will stay open forever, and your server will eventually run out of available sockets. Calling file.resume() tells Node: "I don't want this data, just let it flow into the void."
 
-        // 3. You can also emit a custom error or close the connection
-        return res.end(`Error: ${mimeType} is not supported.`);
-      }
+//         // 3. You can also emit a custom error or close the connection
+//         return res.end(`Error: ${mimeType} is not supported.`);
+//       }
 
-      // Create a Writable Stream to the disk
-      const saveTo = path.join(__dirname, "uploads", filename);
-      const writeStream = fs.createWriteStream(saveTo);
+//       // Create a Writable Stream to the disk
+//       const saveTo = path.join(__dirname, "uploads", filename);
+//       const writeStream = fs.createWriteStream(saveTo);
 
-      // PIPE: The "magic" happens here.
-      // Data flows from the Request -> Busboy -> File System
-      file.pipe(writeStream);
+//       // PIPE: The "magic" happens here.
+//       // Data flows from the Request -> Busboy -> File System
+//       file.pipe(writeStream);
 
-      writeStream.on("finish", () => {
-        console.log(`[Stream End] ${filename} saved to disk.`);
-      });
-    });
+//       writeStream.on("finish", () => {
+//         console.log(`[Stream End] ${filename} saved to disk.`);
+//       });
+//     });
 
-    busboy.on("finish", () => {
-      res.writeHead(200, { Connection: "close" });
-      res.end("Upload successful with zero memory bloat!");
-    });
+//     busboy.on("finish", () => {
+//       res.writeHead(200, { Connection: "close" });
+//       res.end("Upload successful with zero memory bloat!");
+//     });
 
-    // Pipe the raw request into busboy
-    req.pipe(busboy);
-  } else {
-    res.writeHead(404);
-    res.end();
-  }
-});
+//     // Pipe the raw request into busboy
+//     req.pipe(busboy);
+//   } else {
+//     res.writeHead(404);
+//     res.end();
+//   }
+// });
 
-server.listen(3000, () => {
-  console.log("Server listening on http://localhost:3000");
-});
+// server.listen(3000, () => {
+//   console.log("Server listening on http://localhost:3000");
+// });
 
 // Why this is "40 LPA" Code:
 // Event-Driven: We don't use await req.body. Instead, we listen for the 'file' event. This means we start writing the first byte to the disk while the last byte is still traveling across the internet.
@@ -103,3 +103,84 @@ server.listen(3000, () => {
 
 // One Quick Exercise
 // Try to run this locally with a very large file (like a movie or a large zip) and check your Task Manager or Activity Monitor. You should see the node process memory stay completely flat, even while the file is being written to the uploads folder.
+
+// Action Item: Let's Refine the API
+// I want you to try one thing. In your current upload-api.js, what happens if the user stops the upload halfway? (e.g., they close their browser).
+
+// Does your writeStream stay open? Does a "half-finished" file stay on your desktop?
+
+// Step 1: Add a listener for the aborted event on the request.
+// Step 2: If the user aborts, delete the partial file using fs.unlink.
+
+// Can we move to coding this "Cleanup Logic," or do you have a specific question about the Buffer vs. Stream trade-off?
+
+const server = http.createServer((req, res) => {
+  if (req.method === "POST") {
+    // Initialize Busboy with the request headers
+    const busboy = Busboy({ headers: req.headers });
+
+    // This event fires as soon as a file field is detected in the stream
+    busboy.on("file", (name, file, info) => {
+      const { filename, mimeType } = info;
+      const saveTo = path.join(__dirname, "uploads", filename);
+
+      // 1. Validation
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "text/plain",
+        "video/mp4",
+      ];
+      if (!allowedTypes.includes(mimeType)) {
+        file.resume();
+        // Check if we already sent a response to avoid ERR_HTTP_HEADERS_SENT
+        if (!res.writableEnded) {
+          res.writeHead(400, { "Content-Type": "text/plain" });
+          res.end(`Error: ${mimeType} is not supported.`);
+        }
+        return;
+      }
+
+      const writeStream = fs.createWriteStream(saveTo);
+      file.pipe(writeStream);
+
+      let isUploadComplete = false;
+
+      writeStream.on("finish", () => {
+        isUploadComplete = true;
+        console.log(`[Success] ${filename} fully saved.`);
+      });
+
+      // 2. The Cleanup: Listen to the REQUEST closing prematurely
+      req.on("aborted", () => {
+        if (!isUploadComplete) {
+          writeStream.destroy();
+          fs.unlink(saveTo, (err) => {
+            if (!err) console.log(`[Cleanup] Deleted incomplete: ${filename}`);
+          });
+        }
+      });
+
+      writeStream.on("error", (err) => {
+        console.error("Write Stream Error:", err);
+        writeStream.destroy();
+      });
+    });
+
+    busboy.on("finish", () => {
+      res.writeHead(200, { Connection: "close" });
+      res.end("Upload successful with zero memory bloat!");
+    });
+
+    // Pipe the raw request into busboy
+    req.pipe(busboy);
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+server.listen(3000, () => {
+  console.log("Server listening on http://localhost:3000");
+});
