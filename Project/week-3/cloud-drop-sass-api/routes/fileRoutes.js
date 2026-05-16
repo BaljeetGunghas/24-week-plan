@@ -28,7 +28,7 @@ router.get("/all", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid User ID" });
     }
     // Parse limit to a Number, default to 20 if env is missing
-    const limit = Number(process.env.FILE_LIMIT) || 10;
+    const limit = Number(process.env.FILE_LIMIT) || 8;
     const skip = (Number(page) - 1) * limit;
 
     const query = { user: userId };
@@ -57,6 +57,7 @@ router.get("/all", auth, async (req, res) => {
         totalFiles,
         currentPage: Number(page),
         totalPages: Math.ceil(totalFiles / limit),
+        limit
       },
     });
   } catch (error) {

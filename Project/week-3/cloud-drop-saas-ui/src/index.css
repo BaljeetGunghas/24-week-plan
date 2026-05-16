@@ -9,12 +9,41 @@
 @layer base {
   body {
     /* Set the default colors and transition here for the whole app */
-    @apply transition-colors duration-300 bg-white dark: bg-gray-900 text-gray-900 dark:text-white;
+    @apply transition-colors duration-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
   }
 }
 
 button {
   cursor: pointer;
+}
+
+/* ================= SCROLLBAR THEME ================= */
+
+/* Chrome / Edge / Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #06b6d4, #3b82f6);
+  border-radius: 10px;
+  border: 2px solid rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #22d3ee, #60a5fa);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #06b6d4 rgba(255, 255, 255, 0.05);
 }
 
 @keyframes toastShrink {

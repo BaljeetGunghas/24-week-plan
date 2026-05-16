@@ -28,3 +28,14 @@ export const formatFileSize = (bytes) => {
     parseFloat((bytes / Math.pow(k, i)).toFixed(i > 1 ? 1 : 0)) + " " + sizes[i]
   );
 };
+
+export const getFileTypeStyle = (type = "") => {
+  if (type.includes("image")) return "text-cyan-400 bg-cyan-500/10";
+  if (type.includes("video")) return "text-purple-400 bg-purple-500/10";
+  if (type.includes("pdf")) return "text-red-400 bg-red-500/10";
+  if (type.includes("word") || type.includes("document"))
+    return "text-blue-400 bg-blue-500/10";
+  if (type.includes("zip")) return "text-yellow-400 bg-yellow-500/10";
+
+  return "text-slate-300 bg-white/10";
+};

@@ -75,52 +75,49 @@ const UploadModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl p-4">
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[36px] border border-white/10 bg-white dark:bg-slate-900 shadow-2xl animate-in fade-in zoom-in duration-300">
-        {/* Glow Effects */}
-        <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+      {/* MODAL */}
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-2xl shadow-2xl">
+        {/* GLOW (aligned with delete modal intensity) */}
+        <div className="absolute -top-20 -right-20 h-44 w-44 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
 
-        {/* Content */}
-        <div className="relative p-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight text-slate-800 dark:text-white">
+        <div className="relative p-6 space-y-5">
+          {/* HEADER */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white dark:text-white">
                 Upload Files
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Securely upload and manage your cloud files
               </p>
             </div>
 
-            {/* Close */}
             <button
               onClick={handleClose}
-              className="flex items-center justify-center h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+              className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/10 border border-white/10 text-slate-300 hover:bg-white/15 transition"
             >
               ✕
             </button>
           </div>
 
-          {/* Upload Area */}
+          {/* UPLOAD AREA */}
           <div
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
             className={`
-              relative overflow-hidden rounded-[32px] border-2 border-dashed transition-all duration-300
+              relative overflow-hidden rounded-xl border border-dashed transition-all
               ${
                 isDragging
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 scale-[1.01]"
-                  : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-blue-400"
+                  ? "border-blue-500 bg-blue-500/10 scale-[1.01]"
+                  : "border-white/10 bg-white/10"
               }
             `}
           >
-            {/* Hidden Input */}
             <input
               type="file"
               className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
@@ -128,46 +125,42 @@ const UploadModal = ({ isOpen, onClose }) => {
               accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.txt,.mp4"
             />
 
-            {/* Inner */}
-            <div className="relative flex flex-col items-center justify-center px-8 py-16">
-              {/* Animated Icon */}
-              <div className="relative mb-8">
-                {/* Glow */}
+            <div className="flex flex-col items-center justify-center text-center px-6 py-14 space-y-4">
+              {/* ICON */}
+              <div className="relative">
                 <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl animate-pulse" />
 
-                {/* Main Icon */}
                 <div
                   className={`
-                    relative flex h-28 w-28 items-center justify-center rounded-[32px]
+                    relative flex h-24 w-24 items-center justify-center rounded-2xl
                     bg-gradient-to-br from-blue-500 via-indigo-500 to-cyan-500
-                    text-6xl shadow-2xl shadow-blue-500/30
-                    transition-transform duration-300
+                    text-5xl shadow-lg
+                    transition-transform
                     ${isDragging ? "scale-110 rotate-6" : ""}
                   `}
                 >
                   {file ? "📄" : "☁️"}
                 </div>
 
-                {/* Floating Badge */}
-                <div className="absolute -bottom-2 -right-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl text-xl">
+                <div className="absolute -bottom-2 -right-2 h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 border border-white/10 text-lg">
                   {file ? "✨" : "⬆️"}
                 </div>
               </div>
 
-              {/* File Info */}
+              {/* CONTENT */}
               {file ? (
-                <div className="w-full max-w-md text-center">
-                  <div className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-lg">
-                    <p className="truncate text-lg font-black text-blue-600 dark:text-blue-400">
+                <div className="w-full max-w-md">
+                  <div className="rounded-xl border border-white/10 bg-white/10 p-4 space-y-2">
+                    <p className="truncate text-sm font-semibold text-blue-400">
                       {file.name}
                     </p>
 
-                    <div className="mt-3 flex items-center justify-center gap-2">
-                      <span className="rounded-full bg-blue-100 dark:bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-600 dark:text-blue-400">
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      <span className="text-[11px] px-2 py-1 rounded-full bg-blue-500/10 text-blue-300">
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </span>
 
-                      <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-500">
+                      <span className="text-[11px] px-2 py-1 rounded-full bg-white/10 text-slate-400">
                         {file.type || "FILE"}
                       </span>
                     </div>
@@ -175,25 +168,22 @@ const UploadModal = ({ isOpen, onClose }) => {
                 </div>
               ) : (
                 <>
-                  {/* Heading */}
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white">
+                  <h3 className="text-lg font-bold text-white">
                     Drag & Drop Files
                   </h3>
 
-                  {/* Description */}
-                  <p className="mt-3 max-w-md text-center text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-400 max-w-md">
                     Upload images, videos, PDFs, documents, and text files
                     securely to your CloudDrop storage.
                   </p>
 
-                  {/* Supported Types */}
-                  <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                    {["PNG", "JPG", "PDF", "DOCX", "TXT", "MP4"].map((type) => (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {["PNG", "JPG", "PDF", "DOCX", "TXT", "MP4"].map((t) => (
                       <span
-                        key={type}
-                        className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm"
+                        key={t}
+                        className="text-[11px] px-3 py-1 rounded-xl border border-white/10 bg-white/10 text-slate-300"
                       >
-                        {type}
+                        {t}
                       </span>
                     ))}
                   </div>
@@ -202,43 +192,34 @@ const UploadModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 flex gap-4">
-            {/* Cancel */}
+          {/* ACTIONS (matched with delete modal) */}
+          <div className="flex gap-3">
             <button
               onClick={handleClose}
               disabled={uploading}
-              className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 py-4 font-bold text-slate-700 dark:text-slate-200 transition-all hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+              className="flex-1 h-10 rounded-xl border border-white/10 bg-white/10 text-sm text-slate-200 hover:bg-white/15 transition"
             >
               Cancel
             </button>
 
-            {/* Upload */}
             <button
               disabled={!file || uploading}
               onClick={handleUpload}
               className={`
-                flex-1 rounded-2xl px-6 py-4 font-bold text-white shadow-2xl transition-all duration-300
+                flex-1 h-10 rounded-xl text-sm font-semibold text-white transition
                 ${
                   !file || uploading
-                    ? "cursor-not-allowed bg-slate-300 dark:bg-slate-700"
-                    : "bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 hover:scale-[1.02] hover:shadow-blue-500/40 active:scale-95"
+                    ? "bg-slate-600 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-500 hover:scale-[1.02]"
                 }
               `}
             >
-              {uploading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  Uploading...
-                </div>
-              ) : (
-                "Start Upload"
-              )}
+              {uploading ? "Uploading..." : "Start Upload"}
             </button>
           </div>
 
-          {/* Footer Hint */}
-          <p className="mt-5 text-center text-xs font-medium text-slate-400 dark:text-slate-500">
+          {/* FOOTER */}
+          <p className="text-center text-[10px] text-slate-500">
             CloudDrop • Secure Cloud Storage Platform
           </p>
         </div>

@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import ThemeToggle from "./ThemeToggle";
 import { getTokenKey } from "../utils/constant";
 import { getDashboardStatsApi } from "../api/dashboard";
 import UploadModal from "./DashboardComponent/UploadModal";
 import Asside from "./DashboardComponent/Asside";
 import Setting from "./DashboardComponent/Setting";
-import MyFiles from "./DashboardComponent/MyFiles";
 
 import { updateStatesActionReducer } from "../redux/slice/statsSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,57 +13,55 @@ import {
   updateFilesActionReducer,
   updateFilesLoadingActionReducer,
 } from "../redux/slice/fileSlice";
-import Pagination from "./DashboardComponent/Pagination";
+import MyFiles from "./DashboardComponent/MyFiles";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-
   const { totalPages = 1 } = useSelector((state) => state.files);
 
   const [activeTab, setActiveTab] = useState("My Files");
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // track page locally (important for pagination)
   const [page, setPage] = useState(1);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // -------------------------
-  // FETCH FILES (PAGINATION SUPPORT)
-  // -------------------------
   const fetchFiles = async ({ query = "", page = 1, append = false } = {}) => {
     dispatch(updateFilesLoadingActionReducer(true));
 
-    const params = {
-      search: query,
-      page,
-    };
+    try {
+      const response = await getFilesApi({
+        search: query,
+        page,
+      });
 
-    const response = await getFilesApi(params);
-    const responseData = response?.data || {};
+      dispatch(
+        updateFilesActionReducer({
+          ...(response?.data || {}),
+          append,
+        }),
+      );
 
-    dispatch(
-      updateFilesActionReducer({
-        ...responseData,
-        append,
-      }),
-    );
+      setPage(page);
+    } catch (err) {
+      console.log(err);
+    }
 
-    setPage(page);
     dispatch(updateFilesLoadingActionReducer(false));
   };
 
-  // -------------------------
-  // INIT
-  // -------------------------
   useEffect(() => {
     const init = async () => {
       setLoading(true);
 
-      const stats = await getDashboardStatsApi();
-      dispatch(updateStatesActionReducer(stats?.data?.storage));
+      try {
+        const stats = await getDashboardStatsApi();
+        dispatch(updateStatesActionReducer(stats?.data?.storage));
 
-      await fetchFiles({ page: 1 });
+        await fetchFiles({ page: 1 });
+      } catch (err) {
+        console.log(err);
+      }
 
       setLoading(false);
     };
@@ -73,9 +69,6 @@ const Dashboard = () => {
     init();
   }, []);
 
-  // -------------------------
-  // SEARCH (RESET PAGINATION)
-  // -------------------------
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchFiles({
@@ -83,77 +76,146 @@ const Dashboard = () => {
         page: 1,
         append: false,
       });
-    }, 400);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-100">
-      {/* Sidebar */}
-      <Asside
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        loading={loading}
-      />
+    <div className=" overflow-x-hidden bg-[#0B1120] text-white relative ">
+      {/* BACKGROUND */}
+      <div className="absolute top-[-150px] left-[-150px] w-[320px] h-[320px] bg-cyan-500/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-[-180px] right-[-150px] w-[360px] h-[360px] bg-blue-600/20 rounded-full blur-3xl" />
 
-      {/* Main */}
-      <main className="flex-1 ml-96 p-12 pt-5 overflow-y-auto relative">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-4xl font-black">{activeTab}</h2>
-            <p className="text-slate-500">
-              Welcome back, {getTokenKey("name")}!
-            </p>
-          </div>
+      {/* SIDEBAR OVERLAY */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-          <div className="flex items-center gap-6">
-            <ThemeToggle />
+      {/* SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-screen z-40 transition-transform duration-300
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+      >
+        <Asside
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          loading={loading}
+          closeSidebar={() => setSidebarOpen(false)}
+        />
+      </div>
 
+      {/* ================= MAIN ================= */}
+      <main className="lg:ml-[280px] h-screen relative z-10 p-4 sm:p-6 lg:p-8">
+        {/* HEADER */}
+        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
+          {/* ================= LEFT ================= */}
+          <div className="flex items-center justify-between md:justify-start gap-3 sm:gap-4 w-full md:w-auto">
+            {/* MENU BUTTON */}
             <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl font-bold shadow-xl"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sm"
             >
-              ☁️ Upload New
+              ☰
             </button>
+
+            {/* TITLE */}
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">
+                {activeTab}
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-400">
+                Hi,
+                <span className="text-cyan-400 font-semibold ml-1">
+                  {getTokenKey("name")}
+                </span>
+              </p>
+            </div>
           </div>
+
+          {/* ================= SEARCH + ACTIONS ================= */}
+          {activeTab !== "Settings" && (
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto md:items-center">
+              {/* SEARCH */}
+              <div className="w-full sm:w-[320px] md:w-[360px]">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">
+                    🔍
+                  </span>
+
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search files..."
+                    className="
+              w-full
+              h-10
+              pl-10 pr-4
+              rounded-xl
+              bg-white/10
+              border border-white/10
+              text-sm text-white
+              placeholder:text-slate-500
+              focus:outline-none
+              focus:ring-1 focus:ring-cyan-500
+              transition
+            "
+                  />
+                </div>
+              </div>
+
+              {/* UPLOAD BUTTON */}
+              <div className="w-full sm:w-auto flex justify-end">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="
+            h-10
+            w-full sm:w-auto
+            px-4 sm:px-5
+            rounded-xl
+            bg-gradient-to-r from-cyan-500 to-blue-600
+            text-xs sm:text-sm font-semibold
+            flex items-center justify-center gap-2
+            whitespace-nowrap
+          "
+                >
+                  ☁️
+                  <span>Upload</span>
+                </button>
+              </div>
+            </div>
+          )}
         </header>
 
-        {/* SEARCH */}
-        {activeTab !== "Settings" && (
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search files..."
-            className="w-full mb-6 px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border"
-          />
-        )}
-
-        {/* CONTENT */}
-        {activeTab === "Settings" ? (
-          <Setting />
-        ) : (
-          <>
-            <MyFiles />
-
-            {/* PAGINATION BUTTON */}
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={(p) => {
-                fetchFiles({
-                  query: searchQuery,
-                  page: p,
-                  append: false, // IMPORTANT: replace data
-                });
-              }}
-            />
-          </>
-        )}
+        {/* ================= CONTENT ================= */}
+        <div className="rounded-2xl bg-white/10 border border-white/10 p-4 sm:p-3 lg:p-3 ">
+          {activeTab === "Settings" ? (
+            <Setting />
+          ) : (
+            <>
+              <MyFiles
+                onUploadClick={() => setIsModalOpen(true)}
+                searchQuery={searchQuery}
+                handleClearSearch={() => setSearchQuery("")}
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={(p) =>
+                  fetchFiles({
+                    query: searchQuery,
+                    page: p,
+                    append: false,
+                  })
+                }
+              />
+            </>
+          )}
+        </div>
       </main>
 
-      {/* MODAL */}
       <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );

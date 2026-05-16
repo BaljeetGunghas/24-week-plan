@@ -7,13 +7,15 @@ const fileSlice = createSlice({
     loading: false,
     currentPage: 1,
     totalPages: 0,
+    limit: 8,
   },
   reducers: {
     updateFilesActionReducer: (state, action) => {
-      const { files, currentPage, totalPages } = action.payload;
+      const { files, currentPage, totalPages, limit } = action.payload;
       state.currentPage = currentPage;
       state.totalPages = totalPages;
       state.files = files;
+      state.limit = limit;
     },
     deleteFilesActionReducer: (state, action) => {
       if (action.payload) {
@@ -22,7 +24,8 @@ const fileSlice = createSlice({
     },
     addFileActionReducer: (state, action) => {
       if (state.files?.length > 0) {
-        state.files = [action.payload, ...state.files];
+        const updatedFile = [action.payload, ...state.files];
+        state.files = updatedFile.slice(0, state.limit);
       } else {
         state.files = [action.payload];
       }

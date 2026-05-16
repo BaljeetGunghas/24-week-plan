@@ -2,16 +2,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { getTokenKey } from "../../utils/constant";
 import { logoutActionReducer } from "../../redux/slice/authSlice";
 
-const Asside = ({ activeTab, setActiveTab, loading }) => {
+const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
   const { usedBytes, maxBytes, percentage } = useSelector(
-    (state) => state.stats,
+    (state) => state.stats
   );
 
   const dispatch = useDispatch();
 
-  // Storage Values
   const usedMB = (usedBytes / 1024 / 1024).toFixed(2);
-
   const maxMB = (maxBytes / 1024 / 1024).toFixed(0);
 
   const handleLogout = () => {
@@ -19,193 +17,177 @@ const Asside = ({ activeTab, setActiveTab, loading }) => {
   };
 
   const navItems = [
-    {
-      label: "My Files",
-      icon: "☁️",
-    },
-    {
-      label: "Settings",
-      icon: "⚙️",
-    },
+    { label: "My Files", icon: "☁️" },
+    { label: "Settings", icon: "⚙️" },
   ];
 
   return (
-    <aside className="fixed flex h-full w-96 flex-col overflow-hidden border-r border-slate-200/80 bg-white/80 p-6 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
-      {/* Background Glow */}
-      <div className="absolute -top-24 -left-24 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
+    <aside
+      className="
+        relative flex h-screen w-[260px]
+        flex-col overflow-hidden
+        border-r border-white/10
+        bg-white/10 backdrop-blur-2xl
+        p-4
+        shadow-2xl
+      "
+    >
+      {/* BACKGROUND */}
+      <div className="absolute -top-24 -left-20 h-52 w-52 rounded-full bg-cyan-500/15 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-blue-600/15 blur-3xl" />
 
-      {/* Content */}
       <div className="relative z-10 flex h-full flex-col">
-        {/* Logo */}
-        <div className="mb-12 flex items-center gap-4">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-2xl bg-blue-500 blur-xl opacity-30" />
 
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xl font-black text-white shadow-2xl shadow-blue-500/30">
-              ☁️
+        {/* ================= LOGO (SMALLER) ================= */}
+        <div className="mb-6 flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="relative">
+              <div className="absolute inset-0 rounded-xl bg-cyan-500 blur-lg opacity-30" />
+
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-lg">
+                ☁️
+              </div>
+            </div>
+
+            <div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
+                CloudDrop
+              </h1>
+              <p className="text-[10px] text-slate-400">
+                Cloud Storage
+              </p>
             </div>
           </div>
 
-          <div>
-            <h1 className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-3xl font-black tracking-tight text-transparent">
-              CloudDrop
-            </h1>
-
-            <p className="text-xs font-semibold tracking-wide text-slate-400">
-              Secure Cloud Storage
-            </p>
-          </div>
+          <button
+            onClick={closeSidebar}
+            className="lg:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-xs"
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="space-y-3">
+        {/* ================= NAV (COMPACT) ================= */}
+        <nav className="space-y-2">
           {navItems.map((tab) => {
             const isActive = activeTab === tab.label;
 
             return (
               <button
                 key={tab.label}
-                onClick={() => setActiveTab(tab.label)}
+                onClick={() => {
+                  setActiveTab(tab.label);
+                  closeSidebar?.();
+                }}
                 className={`
-                  group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl px-5 py-4 text-left font-bold transition-all duration-300
+                  flex w-full items-center gap-3
+                  rounded-xl px-3 py-2.5
+                  transition-all duration-200
                   ${
                     isActive
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/20"
-                      : "text-slate-600 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
+                      : "text-slate-300 hover:bg-white/10"
                   }
                 `}
               >
-                {/* Active Glow */}
-                {isActive && <div className="absolute inset-0 bg-white/10" />}
-
-                {/* Icon */}
                 <div
                   className={`
-                    relative flex h-11 w-11 items-center justify-center rounded-xl text-lg transition-all
-                    ${
-                      isActive
-                        ? "bg-white/15"
-                        : "bg-slate-100 dark:bg-slate-800"
-                    }
+                    flex h-8 w-8 items-center justify-center rounded-lg text-sm
+                    ${isActive ? "bg-white/15" : "bg-white/10"}
                   `}
                 >
                   {tab.icon}
                 </div>
 
-                {/* Text */}
-                <span className="relative z-10">{tab.label}</span>
+                <span className="text-xs font-medium">
+                  {tab.label}
+                </span>
               </button>
             );
           })}
         </nav>
 
-        {/* Storage Card */}
-        <div className="mt-auto mb-6">
+        {/* ================= STORAGE (COMPACT) ================= */}
+        <div className="mt-auto mb-4">
+
           {loading ? (
-            <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white/60 p-5 shadow-lg backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/60 animate-pulse">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="h-3 w-20 rounded-full bg-slate-200 dark:bg-slate-700" />
-                <div className="h-3 w-10 rounded-full bg-slate-200 dark:bg-slate-700" />
-              </div>
-
-              <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                <div className="h-full w-2/3 rounded-full bg-slate-300 dark:bg-slate-600" />
-              </div>
-
-              <div className="mt-4 h-3 w-32 rounded-full bg-slate-200 dark:bg-slate-700" />
+            <div className="rounded-2xl border border-white/10 bg-white/10 p-4 animate-pulse">
+              <div className="h-3 w-20 bg-white/10 rounded mb-3" />
+              <div className="h-2 w-full bg-white/10 rounded" />
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/70 p-5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
-              {/* Glow */}
-              <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl" />
+            <div className="relative rounded-2xl border border-white/10 bg-white/10 p-4">
+
+              <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-cyan-500/10 blur-2xl" />
 
               <div className="relative">
-                {/* Header */}
-                <div className="mb-4 flex items-center justify-between">
+
+                <div className="flex items-center justify-between mb-3">
+
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                    <p className="text-[10px] uppercase text-slate-400">
                       Storage
                     </p>
-
-                    <p className="mt-1 text-lg font-black text-slate-800 dark:text-white">
+                    <p className="text-lg font-bold text-white">
                       {percentage}%
                     </p>
                   </div>
+
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-sm">
+                    ☁️
+                  </div>
+
                 </div>
 
-                {/* Progress */}
-                <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700"
-                    style={{
-                      width: `${percentage}%`,
-                    }}
+                    className="h-full bg-gradient-to-r from-cyan-400 to-blue-600"
+                    style={{ width: `${percentage}%` }}
                   />
                 </div>
 
-                {/* Footer */}
-                <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-500">
-                  <span>{usedMB} MB used</span>
-
-                  <span>{maxMB} MB total</span>
+                <div className="mt-2 flex justify-between text-[10px] text-slate-400">
+                  <span>{usedMB} MB</span>
+                  <span>{maxMB} MB</span>
                 </div>
+
               </div>
             </div>
           )}
+
         </div>
 
-        {/* User Section */}
-        <div className="border-t border-slate-200 pt-6 dark:border-slate-800">
-          <div className="flex items-center gap-4 rounded-3xl border border-slate-200/80 bg-white/70 p-4 shadow-lg backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl" />
+        {/* ================= USER (COMPACT) ================= */}
+        <div className="border-t border-white/10 pt-4">
 
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-xl ">
-                👤
-              </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 p-3">
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-lg">
+              👤
             </div>
 
-            {/* User Info */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black text-slate-800 dark:text-white">
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-xs font-semibold text-white">
                 {getTokenKey("name") || "User"}
               </p>
-
-              <p className="mt-1 text-xs font-medium text-slate-400">
-                Pro Cloud Member
+              <p className="text-[10px] text-slate-400">
+                Pro Member
               </p>
             </div>
 
-            {/* Logout */}
             <button
               onClick={handleLogout}
-              title="Logout"
-              className="
-                group flex h-12 w-12 items-center justify-center rounded-2xl
-                bg-slate-100 text-slate-500 transition-all duration-300
-                hover:bg-red-500 hover:text-white hover:shadow-xl hover:shadow-red-500/20
-                dark:bg-slate-800
-              "
+              className="h-8 w-8 rounded-lg bg-white/10 text-xs hover:bg-red-500 transition"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              >
-                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
-                <path d="M9 12h12l-3 -3" />
-                <path d="M18 15l3 -3" />
-              </svg>
+              ⎋
             </button>
+
           </div>
+
         </div>
+
       </div>
     </aside>
   );
