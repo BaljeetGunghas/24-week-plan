@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUserProfileAPI } from "../../api/user";
+import { updateUserProfileReducer } from "../../redux/slice/authSlice";
+import { useToast } from "../../../context/ToastContext";
 
 const plans = [
   {
@@ -39,21 +43,53 @@ const plans = [
 ];
 
 const Setting = () => {
+  const dispatch = useDispatch();
+  const { toast } = useToast();
   const [edit, setEdit] = useState(false);
   const [preview, setPreview] = useState(null);
-
+  const { user } = useSelector((state) => state.auth);
   const [form, setForm] = useState({
-    name: "Baljeet Singh",
-    email: "baljeet@clouddrop.io",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Baljeet",
+    name: user?.name || "User",
+    email: user?.email,
+    avatar:
+      user?.profile ||
+      "https://api.dicebear.com/7.x/avataaars/svg?seed=Baljeet",
   });
+  const [fileBob, setFileBob] = useState(null);
+  const [changed, setChanged] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setChanged(true);
+      setFileBob(file);
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    setLoading(true);
+    try {
+      const formdata = new FormData();
+
+      formdata.append("file", fileBob);
+      formdata.append("name", form.name);
+      formdata.append("type", "update-profile");
+
+      const response = await updateUserProfileAPI(formdata);
+
+      if (response?.statusCode === 200) {
+        dispatch(updateUserProfileReducer(response?.data));
+        toast.success("Profile updated successfuly!!");
+        setLoading(false);
+        setChanged(false);
+      }
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.message || "Something went wrong !!");
     }
   };
 
@@ -71,14 +107,19 @@ const Setting = () => {
           </div>
 
           <button
-            onClick={() => setEdit(!edit)}
+            onClick={async () => {
+              if (changed) {
+                await handleUpdateProfile();
+              }
+              setEdit(!edit);
+            }}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
               edit
                 ? "bg-green-500/20 text-green-300"
                 : "bg-cyan-500/20 text-cyan-300"
             }`}
           >
-            {edit ? "Save Changes" : "Edit Profile"}
+            {loading ? "Saveing..." : edit ? "Save Changes" : "Edit Profile"}
           </button>
         </div>
 
@@ -109,7 +150,10 @@ const Setting = () => {
               <input
                 disabled={!edit}
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => {
+                  setChanged(true);
+                  setForm({ ...form, name: e.target.value });
+                }}
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
                 placeholder="Name"
               />
@@ -123,7 +167,10 @@ const Setting = () => {
               <input
                 disabled={!edit}
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={(e) => {
+                  setChanged(true);
+                  setForm({ ...form, email: e.target.value });
+                }}
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
                 placeholder="Email"
               />

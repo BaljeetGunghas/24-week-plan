@@ -4,6 +4,7 @@ const { auth } = require("../middleware/auth"); // Import the guard
 const File = require("../models/File");
 const { default: mongoose } = require("mongoose");
 const { getUsedBytes } = require("../helper/constant");
+const User = require("../models/User");
 
 router.get("/stats", auth, async (req, res) => {
   const { _id } = req.user;
@@ -17,9 +18,13 @@ router.get("/stats", auth, async (req, res) => {
     const maxBytes = parseInt(process.env.USER_STORAGE_LIMIT) || 104857600;
 
     const usedBytes = await getUsedBytes(_id, res);
+    const user = await User.findById({_id}).select("profile")
     res.json({
       message: "stats fetched successfully",
       data: {
+        user:{
+          profile:user.profile
+        },
         storage: {
           usedBytes,
           maxBytes,

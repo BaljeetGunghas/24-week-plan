@@ -3,6 +3,9 @@ const config = {
   apiGateway: {
     LOGIN: "/api/auth/login",
     REGISTER: "/api/auth/register",
+
+    //user
+    UPDATE_PROFILE: "/api/user/update-profile",
     //Dashboard
     DASHBOARD_STATS: "/api/dashboard/stats",
 

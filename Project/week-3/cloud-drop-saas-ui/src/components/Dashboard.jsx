@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { getTokenKey } from "../utils/constant";
 import { getDashboardStatsApi } from "../api/dashboard";
 import UploadModal from "./DashboardComponent/UploadModal";
 import Asside from "./DashboardComponent/Asside";
@@ -14,10 +13,15 @@ import {
   updateFilesLoadingActionReducer,
 } from "../redux/slice/fileSlice";
 import MyFiles from "./DashboardComponent/MyFiles";
+import { updateUserProfileReducer } from "../redux/slice/authSlice";
+import ThemeToggle from "./ThemeToggle";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { totalPages = 1 } = useSelector((state) => state.files);
+  const { totalPages = 1, loading: filesLoading } = useSelector(
+    (state) => state.files,
+  );
+  const { user } = useSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("My Files");
   const [loading, setLoading] = useState(false);
@@ -57,8 +61,14 @@ const Dashboard = () => {
       try {
         const stats = await getDashboardStatsApi();
         dispatch(updateStatesActionReducer(stats?.data?.storage));
-
-        await fetchFiles({ page: 1 });
+        dispatch(
+          updateUserProfileReducer({
+            profile: stats?.data?.user?.profile || null,
+          }),
+        );
+        if (!filesLoading) {
+          await fetchFiles({ page: 1 });
+        }
       } catch (err) {
         console.log(err);
       }
@@ -71,11 +81,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchFiles({
-        query: searchQuery,
-        page: 1,
-        append: false,
-      });
+      if (!filesLoading) {
+        fetchFiles({
+          query: searchQuery,
+          page: 1,
+          append: false,
+        });
+      }
     }, 300);
 
     return () => clearTimeout(timer);
@@ -131,12 +143,12 @@ const Dashboard = () => {
               <p className="text-xs sm:text-sm text-slate-400">
                 Hi,
                 <span className="text-cyan-400 font-semibold ml-1">
-                  {getTokenKey("name")}
+                  {user?.name || "user"}
                 </span>
               </p>
             </div>
           </div>
-
+          <ThemeToggle />
           {/* ================= SEARCH + ACTIONS ================= */}
           {activeTab !== "Settings" && (
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto md:items-center">
@@ -172,8 +184,7 @@ const Dashboard = () => {
               <div className="w-full sm:w-auto flex justify-end">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="
-            h-10
+                  className="h-10
             w-full sm:w-auto
             px-4 sm:px-5
             rounded-xl

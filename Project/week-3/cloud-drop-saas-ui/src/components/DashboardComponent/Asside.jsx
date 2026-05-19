@@ -1,11 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getTokenKey } from "../../utils/constant";
 import { logoutActionReducer } from "../../redux/slice/authSlice";
 
 const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
   const { usedBytes, maxBytes, percentage } = useSelector(
-    (state) => state.stats
+    (state) => state.stats,
   );
+  const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
@@ -37,12 +37,9 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
       <div className="absolute bottom-0 right-0 h-52 w-52 rounded-full bg-blue-600/15 blur-3xl" />
 
       <div className="relative z-10 flex h-full flex-col">
-
         {/* ================= LOGO (SMALLER) ================= */}
         <div className="mb-6 flex items-center justify-between">
-
           <div className="flex items-center gap-3">
-
             <div className="relative">
               <div className="absolute inset-0 rounded-xl bg-cyan-500 blur-lg opacity-30" />
 
@@ -55,9 +52,7 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
               <h1 className="text-lg font-bold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
                 CloudDrop
               </h1>
-              <p className="text-[10px] text-slate-400">
-                Cloud Storage
-              </p>
+              <p className="text-[10px] text-slate-400">Cloud Storage</p>
             </div>
           </div>
 
@@ -101,9 +96,7 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
                   {tab.icon}
                 </div>
 
-                <span className="text-xs font-medium">
-                  {tab.label}
-                </span>
+                <span className="text-xs font-medium">{tab.label}</span>
               </button>
             );
           })}
@@ -111,7 +104,6 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
 
         {/* ================= STORAGE (COMPACT) ================= */}
         <div className="mt-auto mb-4">
-
           {loading ? (
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 animate-pulse">
               <div className="h-3 w-20 bg-white/10 rounded mb-3" />
@@ -119,13 +111,10 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
             </div>
           ) : (
             <div className="relative rounded-2xl border border-white/10 bg-white/10 p-4">
-
               <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-cyan-500/10 blur-2xl" />
 
               <div className="relative">
-
                 <div className="flex items-center justify-between mb-3">
-
                   <div>
                     <p className="text-[10px] uppercase text-slate-400">
                       Storage
@@ -138,7 +127,6 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-sm">
                     ☁️
                   </div>
-
                 </div>
 
                 <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
@@ -152,29 +140,29 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
                   <span>{usedMB} MB</span>
                   <span>{maxMB} MB</span>
                 </div>
-
               </div>
             </div>
           )}
-
         </div>
 
         {/* ================= USER (COMPACT) ================= */}
         <div className="border-t border-white/10 pt-4">
-
           <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 p-3">
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-lg">
-              👤
+            <div className="flex h-10 w-10 rounded-xl items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-lg">
+              <img
+                src={
+                  user?.profile ||
+                  "https://api.dicebear.com/7.x/avataaars/svg?seed=Baljeet"
+                }
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div className="flex-1 min-w-0">
               <p className="truncate text-xs font-semibold text-white">
-                {getTokenKey("name") || "User"}
+                {user?.name || "User"}
               </p>
-              <p className="text-[10px] text-slate-400">
-                Pro Member
-              </p>
+              <p className="text-[10px] text-slate-400">Pro Member</p>
             </div>
 
             <button
@@ -183,11 +171,8 @@ const Asside = ({ activeTab, setActiveTab, loading, closeSidebar }) => {
             >
               ⎋
             </button>
-
           </div>
-
         </div>
-
       </div>
     </aside>
   );

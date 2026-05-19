@@ -2,7 +2,10 @@ import { useState } from "react";
 import { loginApi, registerApi } from "../api/auth";
 import { useToast } from "../../context/ToastContext";
 import { useDispatch } from "react-redux";
-import { loginActionReducer } from "../redux/slice/authSlice";
+import {
+  loginActionReducer,
+  updateUserProfileReducer,
+} from "../redux/slice/authSlice";
 import { getTokenKey } from "../utils/constant";
 
 const Auth = () => {
@@ -36,7 +39,13 @@ const Auth = () => {
       dispatch(
         loginActionReducer({
           token: response?.token,
-          username: getTokenKey("name"),
+        }),
+      );
+
+      dispatch(
+        updateUserProfileReducer({
+          name: getTokenKey("name"),
+          email: getTokenKey("email"),
         }),
       );
     } catch (error) {

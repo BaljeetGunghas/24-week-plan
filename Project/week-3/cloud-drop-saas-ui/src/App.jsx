@@ -3,12 +3,23 @@ import Auth from "./components/Auth";
 import Dashboard from "./components/Dashboard";
 import { ToastProvider } from "../context/ToastContext";
 import { useSelector } from "react-redux";
+import { useEffect } from "react";
 
 function App() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, theme } = useSelector((state) => state.auth);
+
+  const darkMode = theme === "dark";
+
+  // Sync theme globally
+  useEffect(() => {
+    const root = document.documentElement;
+
+    root.classList.toggle("dark", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   return (
-    <div className=" w-full bg-[#030712] text-white">
+    <div className="min-h-screen">
       <ToastProvider>
         {isAuthenticated ? <Dashboard /> : <Auth />}
       </ToastProvider>

@@ -197,14 +197,9 @@
 // In your file upload API, you want to ensure the `fileExtension` is only one of these: `['jpg', 'png', 'pdf']`. If a user tries to upload a `.exe` file, we should reject it.
 
 // **Using your intuition, would it be more efficient to check the file extension inside your `frequencyCounter` loop, or should that be handled by the Zod validation layer before the frequency logic even starts?** 🛡️
-
-
-
-// --------------
-
-
+           
 // Let's explore the **Heap**! It is a specialized tree-based data structure that is perfect for "Top K" problems because it excels at keeping track of the largest or smallest elements in a collection without needing to sort the whole thing. 🌳
-
+    
 // ### What is a Heap?
 // Think of a heap as a **priority queue**. While a normal array is just a line of items, a heap organizes data so that the "most important" item is always at the very top (the root).
 

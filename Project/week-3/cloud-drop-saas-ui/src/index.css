@@ -1,25 +1,17 @@
 @import "tailwindcss";
 
-@theme {
-  /* This line is the missing link. It tells Tailwind: 
-     "If you see the .dark class on a parent, turn on the dark: styles" */
-  --variant-dark: .dark &;
-}
-
+/* BASE THEME SYSTEM */
 @layer base {
   body {
-    /* Set the default colors and transition here for the whole app */
-    @apply transition-colors duration-300 bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
+    @apply bg-white text-black transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-[#030712] text-white;
   }
 }
 
-button {
-  cursor: pointer;
-}
-
-/* ================= SCROLLBAR THEME ================= */
-
-/* Chrome / Edge / Safari */
+/* SCROLLBAR THEME */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -40,18 +32,12 @@ button {
   background: linear-gradient(180deg, #22d3ee, #60a5fa);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: #06b6d4 rgba(255, 255, 255, 0.05);
 }
 
 @keyframes toastShrink {
-  from {
-    width: 100%;
-  }
-
-  to {
-    width: 0%;
-  }
+  from { width: 100%; }
+  to { width: 0%; }
 }
