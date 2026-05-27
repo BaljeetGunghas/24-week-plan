@@ -1,24 +1,21 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 import config from "../../config";
-import { getToken } from "../utils/constant";
 
 const {
-  BASE_URL,
   apiGateway: { DASHBOARD_STATS },
 } = config;
 
 const getDashboardStatsApi = async () => {
   try {
-    const token = getToken();
+    const response = await axiosInstance.get(DASHBOARD_STATS);
 
-    const response = await axios.get(`${BASE_URL}${DASHBOARD_STATS}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
     return response.data;
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
+    console.error(
+      "Error fetching dashboard stats:",
+      error?.response?.data || error.message,
+    );
+
     throw error;
   }
 };

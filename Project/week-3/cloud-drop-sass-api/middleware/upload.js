@@ -16,19 +16,14 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
     // PROFILE IMAGE UPDATE
-    if (req.type === "profile-update") {
+    const isProfile = req.path.includes("update-profile");
+
+    if (isProfile) {
       return {
         folder: "cloud-drop-saas/profiles",
         resource_type: "image",
-
-        // same public_id for same user
         public_id: `profile-${req.user._id}`,
-
-        // overwrite existing file
         overwrite: true,
-
-        // avoid cached old image
-        invalidate: true,
       };
     }
 

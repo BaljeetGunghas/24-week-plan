@@ -4,6 +4,7 @@ import Dashboard from "./components/Dashboard";
 import { ToastProvider } from "../context/ToastContext";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
+import TokenExpiredModal from "./components/TokenExpiredModal";
 
 function App() {
   const { isAuthenticated, theme } = useSelector((state) => state.auth);
@@ -21,6 +22,7 @@ function App() {
   return (
     <div className="min-h-screen">
       <ToastProvider>
+        <TokenExpiredModal />
         {isAuthenticated ? <Dashboard /> : <Auth />}
       </ToastProvider>
     </div>

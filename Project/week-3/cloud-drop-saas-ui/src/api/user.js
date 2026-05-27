@@ -1,25 +1,21 @@
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import config from "../../config";
-import { getToken } from "../utils/constant";
 
 const {
-  BASE_URL,
   apiGateway: { UPDATE_PROFILE },
 } = config;
 
 const updateUserProfileAPI = async (payload) => {
   try {
-    const token = getToken();
+    if (!payload) throw new Error("Payload is required");
 
-    const response = await axios.post(`${BASE_URL}${UPDATE_PROFILE}`, payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.post(UPDATE_PROFILE, payload);
+
     return response.data;
   } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-    throw error;
+    console.error("Error updating user profile:", error);
+
+    throw error?.response?.data || error;
   }
 };
 

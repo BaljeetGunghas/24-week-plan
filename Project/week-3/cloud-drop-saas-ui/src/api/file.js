@@ -1,25 +1,17 @@
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import config from "../../config";
-import { getToken } from "../utils/constant";
 
 const {
-  BASE_URL,
   apiGateway: { GET_FILES, UPLOAD_FILE, DELETE_FILE },
 } = config;
 
 const getFilesApi = async ({ search, type, page = 1 }) => {
   try {
-    const token = getToken();
-
-    const response = await axios.get(`${BASE_URL}${GET_FILES}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-
+    const response = await axiosInstance.get(GET_FILES, {
       params: {
         ...(search && { search }),
         ...(type && { type }),
-        ...(page && { page }),
+        page,
       },
     });
 
@@ -32,13 +24,12 @@ const getFilesApi = async ({ search, type, page = 1 }) => {
 
 const uploadFileApi = async (formData) => {
   try {
-    const token = getToken();
-
-    const response = await axios.post(`${BASE_URL}${UPLOAD_FILE}`, formData, {
+    const response = await axiosInstance.post(UPLOAD_FILE, formData, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
       },
     });
+
     return response.data;
   } catch (error) {
     console.error("Error uploading file:", error);
@@ -48,17 +39,10 @@ const uploadFileApi = async (formData) => {
 
 const deleteFileApi = async (fileId) => {
   try {
-    const token = getToken();
+    const response = await axiosInstance.post(DELETE_FILE, {
+      fileId,
+    });
 
-    const response = await axios.post(
-      `${BASE_URL}${DELETE_FILE}`,
-      { fileId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
     return response.data;
   } catch (error) {
     console.error("Error deleting file:", error);

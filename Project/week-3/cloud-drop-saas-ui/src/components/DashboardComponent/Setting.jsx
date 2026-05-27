@@ -72,24 +72,29 @@ const Setting = () => {
 
   const handleUpdateProfile = async () => {
     setLoading(true);
+
     try {
       const formdata = new FormData();
 
-      formdata.append("file", fileBob);
+      if (fileBob) {
+        formdata.append("file", fileBob);
+      }
+
       formdata.append("name", form.name);
-      formdata.append("type", "update-profile");
+      formdata.append("email", form.email);
 
       const response = await updateUserProfileAPI(formdata);
 
       if (response?.statusCode === 200) {
         dispatch(updateUserProfileReducer(response?.data));
-        toast.success("Profile updated successfuly!!");
-        setLoading(false);
+        toast.success("Profile updated successfully!!");
         setChanged(false);
+        setEdit(false);
       }
     } catch (error) {
+      toast.error(error.message || "Something went wrong!!");
+    } finally {
       setLoading(false);
-      toast.error(error.message || "Something went wrong !!");
     }
   };
 

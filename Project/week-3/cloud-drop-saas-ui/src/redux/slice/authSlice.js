@@ -7,6 +7,7 @@ const authSlice = createSlice({
     isAuthenticated: false,
     user: null,
     theme: "dark",
+    isTokenExpired: false,
   },
   reducers: {
     loginActionReducer: (state, action) => {
@@ -28,6 +29,9 @@ const authSlice = createSlice({
     updateThemeReducer: (state) => {
       state.theme = state.theme === "dark" ? "light" : "dark";
     },
+    updateISTokenExpiredReducer: (state, action) => {
+      state.isTokenExpired = action.payload;
+    },
   },
 });
 
@@ -35,6 +39,7 @@ export const {
   loginActionReducer,
   updateUserProfileReducer,
   logoutActionReducer,
-  updateThemeReducer
+  updateThemeReducer,
+  updateISTokenExpiredReducer,
 } = authSlice.actions;
 export default authSlice.reducer;
