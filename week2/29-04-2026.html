@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variable Window Sliding & Smallest Subarray - Week 2</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+
+        .watermark {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #3498db;
+            opacity: 0.6;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .header-info strong {
+            color: #fff;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 i {
+            font-size: 1.3em;
+            color: #3498db;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 i {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        ul,
+        ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: 500;
+            border: 1px solid #bdc3c7;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        .problem-box {
+            background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            page-break-inside: avoid;
+        }
+
+        .problem-box h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+
+        .problem-box p {
+            color: #34495e;
+        }
+
+        .dry-run {
+            background: #f0fdf4;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95em;
+            color: #1e5631;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d4edda;
+            page-break-inside: avoid;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        table thead {
+            background: #3498db;
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+            color: #2c3e50;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #ecf0f1;
+            transition: 0.3s;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+
+        .section-card {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+            background: #f8f9fa;
+        }
+
+        .section-card h3 {
+            color: #2980b9;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card p {
+            color: #34495e;
+        }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .array-visual {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .array-item {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .array-item.zero {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .array-item.empty {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            opacity: 0.5;
+        }
+
+        .array-item.highlight {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+            text-align: center;
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .feature-box:hover {
+            background: #e8f1f9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .feature-box i {
+            font-size: 2.5em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .comparison-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-item {
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .chart-item strong {
+            color: #2980b9;
+        }
+
+        .chart-item p {
+            color: #34495e;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+            page-break-after: avoid;
+        }
+
+        .icon-list {
+            list-style: none;
+        }
+
+        .icon-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34495e;
+        }
+
+        .icon-list i {
+            color: #3498db;
+            width: 24px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .badge.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .badge.yellow {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .badge.green {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        /* Social Links Styling */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .social-link i {
+            font-size: 1.2em;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link svg {
+            width: 28px;
+            height: 28px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .social-link.github {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        .social-link.github:hover {
+            box-shadow: 0 8px 20px rgba(51, 51, 51, 0.4);
+        }
+
+        .social-link.twitter {
+            background: linear-gradient(135deg, #1da1f2, #1a91da);
+        }
+
+        .social-link.twitter:hover {
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .social-link.linkedin {
+            background: linear-gradient(135deg, #0077b5, #005a9a);
+        }
+
+        .social-link.linkedin:hover {
+            box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4);
+        }
+
+        .social-link.instagram {
+            background: linear-gradient(135deg, #e1306c, #c13584);
+        }
+
+        .social-link.instagram:hover {
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .success-text {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .error-text {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* Print Styles */
+        @page {
+            margin: 0.5cm;
+            size: A4 portrait;
+        }
+
+        @media print {
+            * {
+                box-shadow: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                position: relative;
+            }
+
+            .watermark {
+                display: block !important;
+                text-align: center !important;
+                font-size: 13px !important;
+                color: #3498db !important;
+                opacity: 0.8 !important;
+                padding: 10px 0 !important;
+                font-weight: bold !important;
+                border-top: 1px solid #ddd !important;
+                page-break-inside: avoid !important;
+                margin-top: 20px !important;
+            }
+
+            .download-btn-container {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header {
+                page-break-after: avoid;
+                padding: 20px;
+            }
+
+            .content {
+                padding: 15px 20px;
+            }
+
+            h2 {
+                margin-top: 15px;
+                margin-bottom: 10px;
+                page-break-after: avoid;
+            }
+
+            h3 {
+                page-break-after: avoid;
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+
+            p {
+                margin-bottom: 8px;
+            }
+
+            .section-card {
+                page-break-inside: avoid;
+                border: 1px solid #bdc3c7;
+                margin: 10px 0;
+            }
+
+            .problem-box {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                padding: 15px;
+            }
+
+            .feature-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            pre {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            table {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                font-size: 0.9em;
+            }
+
+            .dry-run {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            .svg-container {
+                page-break-inside: avoid;
+                margin: 15px 0;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            .social-links {
+                page-break-inside: avoid;
+                margin: 15px 0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .footer {
+                page-break-inside: avoid;
+                margin-top: 20px;
+                padding: 20px;
+            }
+
+            /* Ensure links stay clickable in PDF */
+            a {
+                color: #3498db;
+                text-decoration: underline;
+            }
+
+            /* Hide URL text for social links in print */
+            .social-link[href]::after {
+                content: none !important;
+            }
+
+            .social-link {
+                display: inline-flex;
+                margin: 5px;
+            }
+
+            .social-link::after {
+                content: none;
+            }
+
+            .social-link i {
+                margin-right: 5px;
+            }
+
+            /* Force SVG rendering in PDF */
+            .social-link svg {
+                width: 20px !important;
+                height: 20px !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+            }
+
+            .social-link svg path {
+                fill: white !important;
+                stroke: none !important;
+            }
+
+            .comparison-chart {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Download Button -->
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <!-- Watermark for PDF -->
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-arrows-alt"></i> 📏
+                </div>
+                <h1>Variable Window Sliding & Smallest Subarray</h1>
+                <p>Finding Minimum Length Subarray with Sum Constraint</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 29-04-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 2</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week2/29-04-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Variable window sliding, two-pointer technique, optimization from O(n²) to O(n)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Social Links at Top -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- CONCEPTS SECTION -->
+            <h2><i class="fas fa-book"></i> Key Concepts Covered</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-arrows-alt"></i>
+                    <h4>Variable Window</h4>
+                    <p>Window size changes based on condition</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h4>Two Pointers</h4>
+                    <p>Left and right pointer management</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>O(n) Optimization</h4>
+                    <p>Reducing from O(n²) to linear</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>Subarray Sum</h4>
+                    <p>Finding subarrays meeting conditions</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-stream"></i>
+                    <h4>Node.js Streams</h4>
+                    <p>HighWaterMark and buffering concepts</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-layer-group"></i>
+                    <h4>Buffering Strategy</h4>
+                    <p>Managing data flow in chunks</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PROBLEM SECTION -->
+            <h2><i class="fas fa-tasks"></i> Problem: Smallest Subarray with Sum ≥ Target</h2>
+
+            <div class="problem-box">
+                <h3><i class="fas fa-target"></i> Challenge</h3>
+                <p><strong>Goal:</strong> Find the length of the smallest contiguous subarray whose sum is greater than or equal to a target value.</p>
+                <p><strong>Example:</strong> Array: [2, 3, 1, 2, 4, 3], Target: 7 → Answer: 2 (subarray [4, 3])</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Variable-size window required</li>
+                    <li><i class="fas fa-check-circle"></i> Two-pointer management essential</li>
+                    <li><i class="fas fa-check-circle"></i> Perfect for stream processing concepts</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-code"></i> Approach 1: Brute Force O(n²)</h3>
+            <pre>function smallestSubarray(target, arr) {
+  let smallestLength = arr.length;
+
+  for (let i = 0; i < arr.length; i++) {
+    let sum = arr[i];
+
+    for (let j = i + 1; j < arr.length; j++) {
+      sum += arr[j];
+
+      if (sum >= target) {
+        smallestLength = Math.min(smallestLength, j - i + 1);
+        break;  // Early exit for this i
+      }
+    }
+  }
+
+  return smallestLength;
+}</pre>
+
+            <div class="section-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Why This is Inefficient</h3>
+                <p><strong>Issue:</strong> For each starting position, we check all possible ending positions. Even with early exit, worst case is O(n²).</p>
+                <p><strong>Redundant Work:</strong> Information from previous windows isn't reused. We recalculate sums we've already computed.</p>
+            </div>
+
+            <h3><i class="fas fa-code"></i> Approach 2: Variable Window O(n)</h3>
+            <pre>function smallestSubarray(target, arr) {
+  let smallestLength = Infinity;
+  let windowSum = 0;
+  let left = 0;
+
+  for (let right = 0; right < arr.length; right++) {
+    windowSum += arr[right];      // Expand window
+
+    // Shrink window while condition is met
+    while (windowSum >= target) {
+      let length = right - left + 1;
+      smallestLength = Math.min(smallestLength, length);
+
+      windowSum -= arr[left];      // Remove leftmost element
+      left++;                       // Move left pointer
+    }
+  }
+
+  return smallestLength === Infinity ? 0 : smallestLength;
+}</pre>
+
+            <h3><i class="fas fa-lightbulb"></i> Why This Works</h3>
+            <ul class="icon-list">
+                <li><i class="fas fa-check"></i> <strong>Single Pass:</strong> Right pointer moves 0→n, left pointer moves 0→n (each element visited max twice)</li>
+                <li><i class="fas fa-check"></i> <strong>Smart Shrinking:</strong> When sum ≥ target, shrink from left until we break the condition</li>
+                <li><i class="fas fa-check"></i> <strong>Optimal Length:</strong> Record smallest length before shrinking further</li>
+                <li><i class="fas fa-check"></i> <strong>State Reuse:</strong> Window sum carries from previous iteration</li>
+            </ul>
+
+            <h3><i class="fas fa-glasses"></i> Visual Example</h3>
+            <div class="svg-container">
+                <svg width="700" height="300" viewBox="0 0 700 300">
+                    <!-- Array -->
+                    <text x="20" y="25" font-size="13" font-weight="bold" fill="#2980b9">Array: [2, 3, 1, 2, 4, 3], Target: 7</text>
+
+                    <!-- Window visualization -->
+                    <text x="20" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 1: Expand to [2, 3, 1, 2] = 8 ≥ 7</text>
+                    <rect x="20" y="70" width="35" height="35" fill="#f39c12" rx="3" stroke="#e67e22" stroke-width="2" />
+                    <text x="37.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">2</text>
+                    <rect x="65" y="70" width="35" height="35" fill="#f39c12" rx="3" stroke="#e67e22" stroke-width="2" />
+                    <text x="82.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">3</text>
+                    <rect x="110" y="70" width="35" height="35" fill="#f39c12" rx="3" stroke="#e67e22" stroke-width="2" />
+                    <text x="127.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">1</text>
+                    <rect x="155" y="70" width="35" height="35" fill="#f39c12" rx="3" stroke="#e67e22" stroke-width="2" />
+                    <text x="172.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">2</text>
+                    <rect x="200" y="70" width="35" height="35" fill="#3498db" rx="3" />
+                    <text x="217.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">4</text>
+                    <rect x="245" y="70" width="35" height="35" fill="#3498db" rx="3" />
+                    <text x="262.5" y="92" font-size="14" font-weight="bold" fill="white" text-anchor="middle">3</text>
+                    <text x="100" y="125" font-size="11" fill="#856404" font-weight="bold">Length = 4</text>
+
+                    <!-- Step 2 -->
+                    <text x="20" y="155" font-size="12" font-weight="bold" fill="#27ae60">Step 2: Shrink, Remove 2: [3, 1, 2] = 6 < 7, stop shrinking</text>
+                    <rect x="20" y="170" width="35" height="35" fill="#3498db" rx="3" />
+                    <text x="37.5" y="192" font-size="14" font-weight="bold" fill="white" text-anchor="middle">2</text>
+                    <rect x="65" y="170" width="35" height="35" fill="#27ae60" rx="3" stroke="#229954" stroke-width="2" />
+                    <text x="82.5" y="192" font-size="14" font-weight="bold" fill="white" text-anchor="middle">3</text>
+                    <rect x="110" y="170" width="35" height="35" fill="#27ae60" rx="3" stroke="#229954" stroke-width="2" />
+                    <text x="127.5" y="192" font-size="14" font-weight="bold" fill="white" text-anchor="middle">1</text>
+                    <rect x="155" y="170" width="35" height="35" fill="#27ae60" rx="3" stroke="#229954" stroke-width="2" />
+                    <text x="172.5" y="192" font-size="14" font-weight="bold" fill="white" text-anchor="middle">2</text>
+
+                    <!-- Step 3 -->
+                    <text x="20" y="245" font-size="12" font-weight="bold" fill="#27ae60">Step 3: Expand, Add 4: [3, 1, 2, 4] = 10, Length = 4</text>
+                    <text x="20" y="270" font-size="12" font-weight="bold" fill="#27ae60">Continue... Final: [4, 3] = 7, Length = 2 ✓</text>
+                </svg>
+            </div>
+
+            <h3><i class="fas fa-terminal"></i> Detailed Step-by-Step Execution</h3>
+            <div class="dry-run">Input: smallestSubarray(7, [2, 3, 1, 2, 4, 3])
+
+Initial: smallestLength = Infinity, windowSum = 0, left = 0
+
+right=0: Add 2 → windowSum=2 (2 < 7, continue)
+right=1: Add 3 → windowSum=5 (5 < 7, continue)
+right=2: Add 1 → windowSum=6 (6 < 7, continue)
+right=3: Add 2 → windowSum=8 (8 ≥ 7, FOUND!)
+         ├─ Length = 3-0+1 = 4, smallestLength = 4
+         ├─ Remove arr[0]=2: windowSum=6
+         ├─ left=1, windowSum(6) < 7, exit while
+
+right=4: Add 4 → windowSum=10 (10 ≥ 7, FOUND!)
+         ├─ Length = 4-1+1 = 4, smallestLength = 4 (no change)
+         ├─ Remove arr[1]=3: windowSum=7
+         ├─ left=2, windowSum(7) ≥ 7, continue shrinking!
+         ├─ Length = 4-2+1 = 3, smallestLength = 3
+         ├─ Remove arr[2]=1: windowSum=6
+         └─ left=3, windowSum(6) < 7, exit while
+
+right=5: Add 3 → windowSum=9 (9 ≥ 7, FOUND!)
+         ├─ Length = 5-3+1 = 3, smallestLength = 3
+         ├─ Remove arr[3]=2: windowSum=7
+         ├─ left=4, windowSum(7) ≥ 7, continue shrinking!
+         ├─ Length = 5-4+1 = 2, smallestLength = 2 ✓ MINIMUM
+         ├─ Remove arr[4]=4: windowSum=3
+         └─ left=5, windowSum(3) < 7, exit while
+
+Return: 2 ✓</div>
+
+            <h3><i class="fas fa-chart-bar"></i> Complexity Analysis</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>Time</th>
+                        <th>Space</th>
+                        <th>When to Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Brute Force</strong></td>
+                        <td><span class="complexity-badge red">O(n²)</span></td>
+                        <td><span class="complexity-badge">O(1)</span></td>
+                        <td>Small arrays, simple interviews</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Variable Window</strong></td>
+                        <td><span class="complexity-badge green">O(n)</span></td>
+                        <td><span class="complexity-badge">O(1)</span></td>
+                        <td><strong>Always preferred!</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <!-- STREAMS SECTION -->
+            <h2><i class="fas fa-stream"></i> Node.js Streams & HighWaterMark</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-lightbulb"></i> Connection to Variable Window</h3>
+                <p>Node.js streams use a similar concept: the <code>highWaterMark</code> is a buffer threshold. When data reaches the limit, the stream pauses. This is like our window shrinking when a condition is met!</p>
+            </div>
+
+            <h3><i class="fas fa-code"></i> Stream HighWaterMark Example</h3>
+            <pre>const fs = require('fs');
+
+// Read large file in 64KB chunks
+const stream = fs.createReadStream('large-file.txt', {
+  highWaterMark: 64 * 1024  // 64KB buffer threshold
+});
+
+stream.on('data', (chunk) => {
+  console.log(`Chunk received: ${chunk.length} bytes`);
+  // Process chunk
+});
+
+stream.on('end', () => {
+  console.log('File reading complete');
+});</pre>
+
+            <h3><i class="fas fa-comparison"></i> Variable Window vs Stream Buffering</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concept</th>
+                        <th>Variable Window</th>
+                        <th>Stream HighWaterMark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Purpose</strong></td>
+                        <td>Find subarray meeting condition</td>
+                        <td>Manage data flow efficiently</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Expand/Shrink</strong></td>
+                        <td>Right pointer expands, left shrinks</td>
+                        <td>Buffer fills, then pauses to process</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Threshold</strong></td>
+                        <td>Sum ≥ target</td>
+                        <td>Buffered data ≥ highWaterMark</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Action</strong></td>
+                        <td>Shrink when threshold met</td>
+                        <td>Pause when threshold reached</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3><i class="fas fa-info-circle"></i> Why HighWaterMark Matters</h3>
+            <ul class="icon-list">
+                <li><i class="fas fa-check"></i> <strong>Memory Efficiency:</strong> 64KB buffer for 1GB file doesn't load everything into RAM</li>
+                <li><i class="fas fa-check"></i> <strong>Backpressure:</strong> Prevents buffer overflow by pausing source</li>
+                <li><i class="fas fa-check"></i> <strong>Real-time Processing:</strong> Process chunks as they arrive, not after loading all data</li>
+                <li><i class="fas fa-check"></i> <strong>Search Analogy:</strong> Like finding a keyword in a stream - keep reading until found, then stop</li>
+            </ul>
+
+            <div class="divider"></div>
+
+            <!-- INTERVIEW TIPS -->
+            <h2><i class="fas fa-lightbulb"></i> Interview Tips & Optimization Notes</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-comments"></i>
+                    <h4>Explain the Inefficiency</h4>
+                    <p>Always mention why brute force is O(n²): recalculation of sums for overlapping windows</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-lightbulb"></i>
+                    <h4>Key Insight</h4>
+                    <p>Two pointers move in same direction, not opposite. Right expands, left shrinks conditionally</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-edge-cases"></i>
+                    <h4>Edge Cases</h4>
+                    <p>Handle when no valid subarray exists (return -1 or Infinity)</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-code"></i>
+                    <h4>Code Clarity</h4>
+                    <p>Use descriptive variable names: windowSum, left, right make logic obvious</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- SUMMARY -->
+            <h2><i class="fas fa-trophy"></i> Learning Summary</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-graduation-cap"></i> Key Takeaways</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <strong>Variable Window Pattern:</strong> Window size changes based on condition, not fixed</li>
+                    <li><i class="fas fa-check"></i> <strong>Two-Pointer Management:</strong> Both pointers move forward, creating shrinking window</li>
+                    <li><i class="fas fa-check"></i> <strong>State Preservation:</strong> Carry window sum between iterations (don't recalculate)</li>
+                    <li><i class="fas fa-check"></i> <strong>Real-World Application:</strong> Stream buffering uses identical concepts</li>
+                    <li><i class="fas fa-check"></i> <strong>Interview Gold:</strong> Can explain brute force, optimization, AND practical applications</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- FOOTER with Social Links -->
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 2 - Variable Window & Optimization</h3>
+            <p>Master variable-size window patterns and stream processing concepts</p>
+
+            <!-- Social Links in Footer -->
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 29-04-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">Master variable window pattern and stream processing!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <!-- Watermark for PDF Footer -->
+            <div class="watermark">© Baljeet Gunghas - Confidential Document</div>
+        </div>
+    </div>
+
+    <!-- PDF Download Script using Print Method -->
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            // Hide the download button before printing
+            const downloadContainer = document.querySelector('.download-btn-container');
+            downloadContainer.style.display = 'none';
+
+            // Show instructions
+            alert('Print Settings Instructions:\n\n' +
+                '1. In the print dialog, click "More settings" or ⚙ icon\n' +
+                '2. Find "Headers and footers" option\n' +
+                '3. UNCHECK "Headers and footers"\n' +
+                '4. Click "Save as PDF"\n\n' +
+                'This will remove the URL and date from the PDF.');
+
+            // Trigger print dialog
+            setTimeout(() => {
+                window.print();
+
+                // Restore button after print
+                setTimeout(() => {
+                    downloadContainer.style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

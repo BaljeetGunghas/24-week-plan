@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Longest Consecutive Sequence & Set Patterns - Week 3 Day 4</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#2c3e50;background:#f8f9fa;padding:20px}.watermark{display:none;text-align:center;font-size:14px;color:#3498db;opacity:.6;padding:20px;font-weight:700}.download-btn-container{position:fixed;top:20px;right:20px;z-index:1000;display:flex;gap:10px}.download-btn{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 5px 15px rgba(52,152,219,.3);transition:all .3s ease}.download-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(52,152,219,.4)}.container{max-width:1000px;margin:0 auto;background:#fff;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.1);overflow:hidden}.header{background:linear-gradient(135deg,#3498db 0%,#2980b9 100%);color:#fff;padding:50px 40px;text-align:center;position:relative;overflow:hidden}.header::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.1) 1px,transparent 1px);background-size:50px 50px}.header-content{position:relative;z-index:1}.header h1{font-size:2.5em;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,.2)}.header p{color:#ecf0f1;font-size:1.1em}.header-icon{font-size:3em;margin-bottom:15px;animation:float 3s ease-in-out infinite}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}.header-info{background:rgba(255,255,255,.15);padding:20px;border-radius:10px;margin-top:20px;backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.3)}.header-info p{color:#fff;margin:8px 0;font-size:.95em}.content{padding:40px}h2{color:#2980b9;margin-top:30px;margin-bottom:15px;font-size:1.8em;border-left:5px solid #3498db;padding-left:15px;display:flex;align-items:center;gap:12px}h3{color:#2980b9;margin-top:20px;margin-bottom:15px;font-size:1.3em;display:flex;align-items:center;gap:10px}p{margin-bottom:12px;color:#34495e;line-height:1.8}ul,ol{margin-left:25px;margin-bottom:15px}li{margin-bottom:10px;color:#34495e}code{background:#ecf0f1;padding:3px 8px;border-radius:4px;font-family:'Courier New',monospace;color:#e74c3c;font-weight:500}pre{background:#2c3e50;color:#ecf0f1;padding:20px;border-radius:10px;overflow-x:auto;margin:20px 0;font-size:.95em;line-height:1.6;border-left:4px solid #3498db;page-break-inside:avoid}.problem-box{background:linear-gradient(135deg,#ecf0f1 0%,#f8f9fa 100%);padding:20px;border-left:5px solid #3498db;margin:20px 0;border-radius:8px;page-break-inside:avoid}.dry-run{background:#f0fdf4;border-left:4px solid #27ae60;padding:20px;border-radius:8px;margin:20px 0;font-family:'Courier New',monospace;white-space:pre-wrap;font-size:.95em;color:#1e5631;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:20px 0;page-break-inside:avoid}table thead{background:#3498db;color:#fff}table th,table td{padding:15px;text-align:left;border:1px solid #bdc3c7}table tr:nth-child(even){background:#f8f9fa}.complexity-badge{display:inline-block;background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;padding:5px 12px;border-radius:20px;font-size:.9em;font-weight:700}.section-card{background:#ecf0f1;border:2px solid #3498db;border-radius:12px;padding:25px;margin:25px 0;page-break-inside:avoid}.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:30px 0}.feature-box{background:#f0f4f8;padding:20px;border-radius:10px;border:2px solid #3498db;text-align:center;page-break-inside:avoid}.feature-box i{font-size:2.5em;color:#3498db;margin-bottom:10px}.feature-box h4{color:#2980b9;margin-bottom:10px}.divider{height:2px;background:linear-gradient(90deg,transparent,#3498db,transparent);margin:40px 0}.badge{display:inline-block;background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;padding:4px 10px;border-radius:15px;font-size:.85em;font-weight:700;margin:0 5px}.badge.red{background:linear-gradient(135deg,#e74c3c,#c0392b)}.badge.green{background:linear-gradient(135deg,#27ae60,#229954)}.social-links{display:flex;justify-content:center;gap:20px;margin:30px 0;flex-wrap:wrap}.social-link{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;text-decoration:none;font-weight:500;transition:all .3s ease}.footer{background:linear-gradient(135deg,#3498db 0%,#2980b9 100%);color:#fff;text-align:center;padding:40px;margin-top:50px}.footer p{color:#ecf0f1;margin:10px 0}.best-practice{background:linear-gradient(135deg,#d4edda 0%,#e8f5e9 100%);border-left:4px solid #27ae60;padding:15px;border-radius:8px;margin:15px 0}.interview-tip{background:linear-gradient(135deg,#fff3cd 0%,#fffacd 100%);border-left:4px solid #f39c12;padding:15px;border-radius:8px;margin:15px 0}.step-number{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;border-radius:50%;font-weight:700;margin-right:10px;font-size:.9em}@media print{.download-btn-container{display:none!important}.watermark{display:block!important}}
+    </style>
+</head>
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-link"></i> 🔗
+                </div>
+                <h1>Longest Consecutive Sequence & Set Patterns</h1>
+                <p>Level 2 Hash Set Optimization - Week 3 Day 4</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 07-05-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 3 - Day 4</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week3/07-05-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Hash Sets, Longest Consecutive Sequence, O(n) Algorithm Design, MongoDB Connection</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link"><i class="fab fa-github"></i></a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-book"></i> Learning Objectives</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-check-double"></i>
+                    <h4>Hash Set Basics</h4>
+                    <p>Contains Duplicate detection in O(n)</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-crown"></i>
+                    <h4>Longest Consecutive</h4>
+                    <p>Find longest chain without sorting</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-brain"></i>
+                    <h4>Smart Optimization</h4>
+                    <p>Why "start check" makes it O(n)</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-database"></i>
+                    <h4>MongoDB Connection</h4>
+                    <p>Resilient database setup with retries</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-cloud"></i>
+                    <h4>Atlas Integration</h4>
+                    <p>Cloud database best practices</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-code-compare"></i>
+                    <h4>Complexity Trade-offs</h4>
+                    <p>Space vs Time optimization</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-cog"></i> Challenge: Longest Consecutive Sequence</h2>
+
+            <div class="problem-box">
+                <h3><i class="fas fa-search"></i> Problem Statement</h3>
+                <p><strong>Input:</strong> <code>[100, 4, 200, 1, 3, 2]</code></p>
+                <p><strong>Output:</strong> <code>4</code> (sequence: [1, 2, 3, 4])</p>
+                <p><strong>Constraint:</strong> Must achieve O(n) time complexity</p>
+            </div>
+
+            <div class="interview-tip">
+                <strong>Why This Problem?</strong> It separates junior developers (brute force O(n²)) from senior developers (elegant O(n) solutions). Many still sort first (O(n log n)).
+            </div>
+
+            <h3><i class="fas fa-lightbulb"></i> The Clever Insight</h3>
+
+            <div class="best-practice">
+                <strong>Key Discovery:</strong> For each number, only start counting a sequence if it's the BEGINNING (number - 1 doesn't exist). Otherwise, you already counted it!
+            </div>
+
+            <h3><i class="fas fa-terminal"></i> Optimal O(n) Solution</h3>
+            <pre>function longestConsecutive(nums) {
+    if (nums.length === 0) return 0;
+
+    // Step 1: Convert to Set for O(1) lookups
+    const numSet = new Set(nums);
+    let longestStreak = 0;
+
+    // Step 2: Iterate through each number
+    for (const num of numSet) {
+        // KEY OPTIMIZATION: Only start if it's the beginning
+        if (!numSet.has(num - 1)) {
+            let currentNum = num;
+            let currentStreak = 1;
+
+            // Step 3: Count consecutive sequence
+            while (numSet.has(currentNum + 1)) {
+                currentNum += 1;
+                currentStreak += 1;
+            }
+
+            longestStreak = Math.max(longestStreak, currentStreak);
+        }
+    }
+
+    return longestStreak;
+}
+
+const result = longestConsecutive([100, 4, 200, 1, 3, 2]);
+console.log(result);  // Output: 4

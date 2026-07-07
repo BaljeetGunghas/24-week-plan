@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js HTTP Server Fundamentals - Week 1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; background: #f8f9fa; padding: 20px; }
+        .watermark { display: none; text-align: center; font-size: 14px; color: #3498db; opacity: 0.6; padding: 20px; font-weight: bold; }
+        .download-btn-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 10px; }
+        .download-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); transition: all 0.3s ease; }
+        .download-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4); }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 50px 40px; text-align: center; position: relative; overflow: hidden; }
+        .header::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 50px 50px; }
+        .header-content { position: relative; z-index: 1; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
+        .header p { color: #ecf0f1; font-size: 1.1em; }
+        .header-icon { font-size: 3em; margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .header-info { background: rgba(255, 255, 255, 0.15); padding: 20px; border-radius: 10px; margin-top: 20px; backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.3); }
+        .header-info p { color: #ffffff; margin: 8px 0; font-size: 0.95em; }
+        .content { padding: 40px; }
+        h2 { color: #2980b9; margin-top: 30px; margin-bottom: 15px; font-size: 1.8em; border-left: 5px solid #3498db; padding-left: 15px; display: flex; align-items: center; gap: 12px; }
+        h3 { color: #2980b9; margin-top: 20px; margin-bottom: 15px; font-size: 1.3em; display: flex; align-items: center; gap: 10px; }
+        p { margin-bottom: 12px; color: #34495e; line-height: 1.8; }
+        ul, ol { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 10px; color: #34495e; }
+        code { background: #ecf0f1; padding: 3px 8px; border-radius: 4px; font-family: 'Courier New', monospace; color: #e74c3c; font-weight: 500; border: 1px solid #bdc3c7; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 10px; overflow-x: auto; margin: 20px 0; font-size: 0.95em; line-height: 1.6; border-left: 4px solid #3498db; }
+        .problem-box { background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%); padding: 20px; border-left: 5px solid #3498db; margin: 20px 0; border-radius: 8px; }
+        .dry-run { background: #f0fdf4; border-left: 4px solid #27ae60; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 0.95em; color: #1e5631; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table thead { background: #3498db; color: white; }
+        table th, table td { padding: 15px; text-align: left; border: 1px solid #bdc3c7; }
+        table tr:nth-child(even) { background: #f8f9fa; }
+        .complexity-badge { display: inline-block; background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; }
+        .section-card { background: #ecf0f1; border: 2px solid #3498db; border-radius: 12px; padding: 25px; margin: 25px 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0; }
+        .feature-box { background: #f0f4f8; padding: 20px; border-radius: 10px; border: 2px solid #3498db; text-align: center; }
+        .feature-box i { font-size: 2.5em; color: #3498db; margin-bottom: 10px; }
+        .feature-box h4 { color: #2980b9; margin-bottom: 10px; }
+        .divider { height: 2px; background: linear-gradient(90deg, transparent, #3498db, transparent); margin: 40px 0; }
+        .icon-list { list-style: none; }
+        .icon-list li { display: flex; align-items: center; gap: 10px; }
+        .icon-list i { color: #3498db; width: 24px; }
+        .social-links { display: flex; justify-content: center; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
+        .social-link { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: linear-gradient(135deg, #3498db, #2980b9); color: white; text-decoration: none; transition: all 0.3s ease; }
+        .social-link:hover { transform: translateY(-3px); }
+        .social-link.github { background: linear-gradient(135deg, #333, #555); }
+        .social-link.twitter { background: linear-gradient(135deg, #1da1f2, #1a91da); }
+        .social-link.linkedin { background: linear-gradient(135deg, #0077b5, #005a9a); }
+        .social-link.instagram { background: linear-gradient(135deg, #e1306c, #c13584); }
+        .footer { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; text-align: center; padding: 40px; margin-top: 50px; }
+        .footer p { color: #ecf0f1; margin: 10px 0; }
+        .success-text { color: #27ae60; font-weight: bold; }
+        .error-text { color: #e74c3c; font-weight: bold; }
+        @media print { * { box-shadow: none !important; } .watermark { display: block !important; } .download-btn-container { display: none !important; } .divider { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()"><i class="fas fa-download"></i> Download PDF</button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon"><i class="fas fa-server"></i> 🌐</div>
+                <h1>Node.js HTTP Server Fundamentals</h1>
+                <p>Building Servers Without Frameworks</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 25-04-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 1</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week1/25-04-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> HTTP server creation, request/response handling, streaming, event-driven architecture, basic routing</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github"><i class="fab fa-github"></i></a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-book"></i> Key Concepts Covered</h2>
+
+            <div class="features-grid">
+                <div class="feature-box"><i class="fas fa-server"></i>
+                    <h4>HTTP Module</h4>
+                    <p>Native Node.js server creation</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-network-wired"></i>
+                    <h4>Req/Response</h4>
+                    <p>Request and response objects</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-water"></i>
+                    <h4>Streaming</h4>
+                    <p>Data in chunks, event handling</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-code"></i>
+                    <h4>JSON Parsing</h4>
+                    <p>String to object conversion</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-tasks"></i> Challenge: Build HTTP Server</h2>
+
+            <div class="problem-box">
+                <h3><i class="fas fa-server"></i> Requirements</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Handle GET /profile → returns target and status</li>
+                    <li><i class="fas fa-check-circle"></i> Handle POST /profile-update → receives and updates data</li>
+                    <li><i class="fas fa-check-circle"></i> Handle GET / → returns success</li>
+                    <li><i class="fas fa-check-circle"></i> Return 404 for unknown routes</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-cog"></i> Creating HTTP Server</h2>
+
+            <h3><i class="fas fa-code"></i> Basic Setup</h3>
+
+            <pre>const http = require("http");
+
+const server = http.createServer((req, res) => {
+  // req = incoming request from client
+  // res = outgoing response to send to client
+
+  res.setHeader("content-type", "application/json");
+  console.log(req.url, req.method);
+
+  // Handle routes...
+});
+
+server.listen(3000, () => {
+  console.log(`Server running on port 3000`);
+});</pre>
+
+            <h3><i class="fas fa-arrow-right"></i> Request Object Properties</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>req.url</code></td>
+                        <td>The path client requested</td>
+                        <td>"/profile"</td>
+                    </tr>
+                    <tr>
+                        <td><code>req.method</code></td>
+                        <td>HTTP method used</td>
+                        <td>"GET", "POST", "PUT"</td>
+                    </tr>
+                    <tr>
+                        <td><code>req.headers</code></td>
+                        <td>Request headers object</td>
+                        <td>{ "content-type": "application/json" }</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3><i class="fas fa-arrow-left"></i> Response Methods</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>res.setHeader()</code></td>
+                        <td>Set response headers</td>
+                    </tr>
+                    <tr>
+                        <td><code>res.statusCode</code></td>
+                        <td>Set HTTP status (200, 404, etc)</td>
+                    </tr>
+                    <tr>
+                        <td><code>res.end()</code></td>
+                        <td>Send response and close connection</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-route"></i> Route Handling</h2>
+
+            <h3><i class="fas fa-download"></i> GET Request Handler</h3>
+
+            <pre>if (req.url === "/profile" && req.method === "GET") {
+  res.statusCode = 200;
+  res.statusMessage = "ok";
+
+  res.end(JSON.stringify({
+    target: "35 LPA",
+    status: "In progress"
+  }));
+}</pre>
+
+            <h3><i class="fas fa-upload"></i> POST Request Handler - Streaming</h3>
+
+            <pre>else if (req.url === "/profile-update" && req.method === "POST") {
+  let body = "";
+
+  // Listen for data chunks
+  req.on("data", (chunk) => {
+    body += chunk.toString();  // Accumulate
+  });
+
+  // All data received
+  req.on("end", () => {
+    try {
+      const data = JSON.parse(body);
+      res.statusCode = 200;
+      res.end(JSON.stringify({
+        data,
+        message: `Target updated to ${data.target}`
+      }));
+    } catch (err) {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ error: "Invalid JSON" }));
+    }
+  });
+}</pre>
+
+            <h3><i class="fas fa-warning"></i> Why Streaming?</h3>
+            <div class="dry-run">
+                HTTP request body comes in CHUNKS, not all at once!
+
+                Why streaming:
+                ✓ Memory efficient (don't load entire file)
+                ✓ Can start processing before all data arrives
+                ✓ Better for large files
+                ✓ Scalability
+
+                Listening to events:
+                - 'data' event: Each chunk arrives
+                - 'end' event: All chunks received
+                - 'error' event: Network error
+            </div>
+
+            <h3><i class="fas fa-bars"></i> HTTP Status Codes</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Meaning</th>
+                        <th>When to Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>200</td>
+                        <td>OK</td>
+                        <td>Request successful</td>
+                    </tr>
+                    <tr>
+                        <td>201</td>
+                        <td>Created</td>
+                        <td>Resource created</td>
+                    </tr>
+                    <tr>
+                        <td>400</td>
+                        <td>Bad Request</td>
+                        <td>Invalid input</td>
+                    </tr>
+                    <tr>
+                        <td>404</td>
+                        <td>Not Found</td>
+                        <td>Path doesn't exist</td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>Server Error</td>
+                        <td>Server crashed</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-exclamation-triangle"></i> Common Issues & Fixes</h2>
+
+            <h3><i class="fas fa-bug"></i> Issue 1: Typo in setHeader</h3>
+            <pre>// ❌ Wrong - assignment instead of method call
+res.setHeaders = ("content-type", "application/json");
+
+// ✅ Correct - proper method invocation
+res.setHeader("content-type", "application/json");</pre>
+
+            <h3><i class="fas fa-bug"></i> Issue 2: No Error Handling for JSON.parse()</h3>
+            <pre>// ❌ Crashes on invalid JSON
+const data = JSON.parse(body);
+
+// ✅ Graceful error handling
+try {
+  const data = JSON.parse(body);
+} catch (err) {
+  res.statusCode = 400;
+  res.end(JSON.stringify({ error: "Invalid JSON" }));
+}</pre>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-code-compare"></i> Native HTTP vs Express</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Native HTTP</th>
+                        <th>Express</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Body Parsing</td>
+                        <td>Manual: req.on('data')</td>
+                        <td>Automatic: req.body</td>
+                    </tr>
+                    <tr>
+                        <td>Routing</td>
+                        <td>Manual if/else chains</td>
+                        <td>Clean: app.get(), app.post()</td>
+                    </tr>
+                    <tr>
+                        <td>Headers</td>
+                        <td>Manual: res.setHeader()</td>
+                        <td>res.header() or middleware</td>
+                    </tr>
+                    <tr>
+                        <td>Learning Value</td>
+                        <td><span class="success-text">✓ High - understand fundamentals</span></td>
+                        <td>Hides complexity</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-trophy"></i> Learning Summary</h2>
+
+            <div class="features-grid">
+                <div class="feature-box"><i class="fas fa-server"></i>
+                    <h4>HTTP Server</h4>
+                    <p>Listen on port, handle requests</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-water"></i>
+                    <h4>Streaming</h4>
+                    <p>Data arrives in chunks</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-code"></i>
+                    <h4>JSON Handling</h4>
+                    <p>Parse and stringify data</p>
+                </div>
+                <div class="feature-box"><i class="fas fa-bolt"></i>
+                    <h4>Event-Driven</h4>
+                    <p>Listen for data/end events</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-graduation-cap"></i> Key Takeaways</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <strong>Native HTTP Module:</strong> Foundation upon which Express is built</li>
+                    <li><i class="fas fa-check"></i> <strong>Streaming Data:</strong> Listen to 'data' and 'end' events for request body</li>
+                    <li><i class="fas fa-check"></i> <strong>Event-Driven:</strong> Node.js is asynchronous and event-based</li>
+                    <li><i class="fas fa-check"></i> <strong>Error Handling:</strong> Always wrap JSON.parse() in try-catch</li>
+                    <li><i class="fas fa-check"></i> <strong>Understanding Before Framework:</strong> Learn fundamentals with native HTTP, then use Express for cleaner code</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 1 - Node.js HTTP Server Fundamentals</h3>
+            <p>Foundation for backend development and web server concepts</p>
+
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github"><i class="fab fa-github"></i></a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 25-04-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">Master Node.js HTTP fundamentals - the foundation of backend development!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <div class="watermark">© Baljeet Gunghas - Confidential Document</div>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+            document.querySelector('.download-btn-container').style.display = 'none';
+            alert('📝 Print Settings: Click "More settings" → UNCHECK "Headers and footers" → "Save as PDF"');
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    document.querySelector('.download-btn-container').style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+</html>

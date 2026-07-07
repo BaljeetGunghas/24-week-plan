@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced DSA Concepts - Week 2 Day 4</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+
+        .watermark {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #3498db;
+            opacity: 0.6;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .header-info strong {
+            color: #fff;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        .section-card {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .social-link.github { background: linear-gradient(135deg, #333, #555); }
+        .social-link.twitter { background: linear-gradient(135deg, #1da1f2, #1a91da); }
+        .social-link.linkedin { background: linear-gradient(135deg, #0077b5, #005a9a); }
+        .social-link.instagram { background: linear-gradient(135deg, #e1306c, #c13584); }
+
+        .footer {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        @page { margin: 0.5cm; size: A4 portrait; }
+
+        @media print {
+            .watermark { display: block !important; }
+            .download-btn-container { display: none !important; }
+            .divider { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-layer-group"></i> 📊
+                </div>
+                <h1>Advanced DSA Concepts</h1>
+                <p>Week 2 Day 4 - Deep Dive Topics</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 30-04-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 2</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week2/30-04-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Advanced data structure patterns and optimization techniques</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-info-circle"></i> Content Status</h2>
+
+            <div class="section-card">
+                <h3>Documentation In Progress</h3>
+                <p>This page covers advanced DSA concepts from Week 2 Day 4. Content is being compiled and will include:</p>
+                <ul style="margin-left: 25px;">
+                    <li>Advanced algorithmic patterns</li>
+                    <li>Complex data structure implementations</li>
+                    <li>Performance optimization techniques</li>
+                    <li>Real-world application scenarios</li>
+                </ul>
+                <p style="margin-top: 20px;"><span class="badge">COMING SOON</span></p>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-graduation-cap"></i> Learning Path</h2>
+            <p>This content is part of the Week 2 advanced DSA learning sequence. Refer to the previous chapters for foundational concepts:</p>
+            <ul style="margin-left: 25px;">
+                <li><strong>27-04-2026:</strong> Anagram Detection & Event Loop</li>
+                <li><strong>28-04-2026:</strong> Sliding Window Pattern & Max Sum Subarray</li>
+                <li><strong>29-04-2026:</strong> Variable Window Sliding & Smallest Subarray</li>
+                <li><strong>30-04-2026:</strong> Advanced Concepts (Current)</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 2 - Advanced DSA Concepts</h3>
+            <p>Building expertise in complex algorithmic patterns and optimization</p>
+
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 30-04-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">Continue your DSA mastery journey!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <div class="watermark">© Baljeet Gunghas - Confidential Document</div>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            const downloadContainer = document.querySelector('.download-btn-container');
+            downloadContainer.style.display = 'none';
+
+            alert('Print Settings Instructions:\n\n' +
+                '1. In the print dialog, click "More settings" or ⚙ icon\n' +
+                '2. Find "Headers and footers" option\n' +
+                '3. UNCHECK "Headers and footers"\n' +
+                '4. Click "Save as PDF"\n\n' +
+                'This will remove the URL and date from the PDF.');
+
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => {
+                    downloadContainer.style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idempotency & Hashing - Week 3 Day 1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+
+        .watermark {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #3498db;
+            opacity: 0.6;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .header-info strong {
+            color: #fff;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 i {
+            font-size: 1.3em;
+            color: #3498db;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 i {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        ul,
+        ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: 500;
+            border: 1px solid #bdc3c7;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        .problem-box {
+            background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            page-break-inside: avoid;
+        }
+
+        .problem-box h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+
+        .problem-box p {
+            color: #34495e;
+        }
+
+        .dry-run {
+            background: #f0fdf4;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95em;
+            color: #1e5631;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d4edda;
+            page-break-inside: avoid;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        table thead {
+            background: #3498db;
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+            color: #2c3e50;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #ecf0f1;
+            transition: 0.3s;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+
+        .section-card {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+            background: #f8f9fa;
+        }
+
+        .section-card h3 {
+            color: #2980b9;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card p {
+            color: #34495e;
+        }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+            text-align: center;
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .feature-box:hover {
+            background: #e8f1f9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .feature-box i {
+            font-size: 2.5em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .comparison-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-item {
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .chart-item strong {
+            color: #2980b9;
+        }
+
+        .chart-item p {
+            color: #34495e;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+            page-break-after: avoid;
+        }
+
+        .icon-list {
+            list-style: none;
+        }
+
+        .icon-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34495e;
+        }
+
+        .icon-list i {
+            color: #3498db;
+            width: 24px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .badge.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .badge.yellow {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .badge.green {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .social-link i {
+            font-size: 1.2em;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link.github {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        .social-link.github:hover {
+            box-shadow: 0 8px 20px rgba(51, 51, 51, 0.4);
+        }
+
+        .social-link.twitter {
+            background: linear-gradient(135deg, #1da1f2, #1a91da);
+        }
+
+        .social-link.twitter:hover {
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .social-link.linkedin {
+            background: linear-gradient(135deg, #0077b5, #005a9a);
+        }
+
+        .social-link.linkedin:hover {
+            box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4);
+        }
+
+        .social-link.instagram {
+            background: linear-gradient(135deg, #e1306c, #c13584);
+        }
+
+        .social-link.instagram:hover {
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .success-text {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .error-text {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .interview-tip {
+            background: linear-gradient(135deg, #fff3cd 0%, #fffacd 100%);
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+
+        .interview-tip strong {
+            color: #856404;
+        }
+
+        .best-practice {
+            background: linear-gradient(135deg, #d4edda 0%, #e8f5e9 100%);
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+
+        .best-practice strong {
+            color: #155724;
+        }
+
+        @page {
+            margin: 0.5cm;
+            size: A4 portrait;
+        }
+
+        @media print {
+            * {
+                box-shadow: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                position: relative;
+            }
+
+            .watermark {
+                display: block !important;
+            }
+
+            .download-btn-container {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header {
+                page-break-after: avoid;
+                padding: 20px;
+            }
+
+            .content {
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-key"></i> 🔐
+                </div>
+                <h1>Idempotency & Hashing Architecture</h1>
+                <p>Building Resilient & Scalable APIs - Week 3 Day 1</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 04-05-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 3 - Day 1</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week3/04-05-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Idempotency, Hashing, Database Architecture, 40 LPA System Design</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-book"></i> Learning Objectives</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Idempotency</h4>
+                    <p>Design APIs that prevent duplicate operations when requests are repeated</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-fingerprint"></i>
+                    <h4>Hashing</h4>
+                    <p>Generate unique fingerprints of file content for deduplication</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-database"></i>
+                    <h4>Database Design</h4>
+                    <p>Many-to-Many relationships with reference counting</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-stream"></i>
+                    <h4>Stream Processing</h4>
+                    <p>Handle large files efficiently with chunk-by-chunk hashing</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-cloud"></i>
+                    <h4>Cloud Integration</h4>
+                    <p>Design for scalability with S3 and deduplication strategies</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-lock"></i>
+                    <h4>Data Integrity</h4>
+                    <p>Ensure consistency across database and file system operations</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-puzzle-piece"></i> Core Concepts: Understanding Idempotency</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-question-circle"></i> What is Idempotency?</h3>
+                <p>An operation is <strong>idempotent</strong> if performing it multiple times produces the same result as performing it once. In API design, this means:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> User clicks "Upload" → File is uploaded once</li>
+                    <li><i class="fas fa-check"></i> User clicks "Upload" 3 times accidentally → File is still uploaded once</li>
+                    <li><i class="fas fa-check"></i> No duplicates, no data loss, consistent state</li>
+                </ul>
+            </div>
+
+            <div class="best-practice">
+                <strong>40 LPA Insight:</strong> Major companies like Amazon, Google, and Netflix ensure idempotency across all critical operations. When you understand this pattern, you're thinking like a senior architect.
+            </div>
+
+            <h2><i class="fas fa-cog"></i> Challenge 1: The Upload Problem</h2>
+
+            <div class="problem-box">
+                <h3><i class="fas fa-cloud-upload-alt"></i> The Scenario</h3>
+                <p>You have a file upload endpoint. A user uploads the same file 3 times:</p>
+                <ul>
+                    <li><strong>Without idempotency:</strong> 3 copies on disk, wasted space, confusion</li>
+                    <li><strong>With idempotency:</strong> 1 copy on disk, linked to all 3 uploads, efficient</li>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-fingerprint"></i> The Solution: Content Hashing</h3>
+                <p>Instead of trusting the filename, generate a SHA-256 hash of the file content:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <code>document.pdf</code> (1MB) → Hash: <code>a1b2c3...</code></li>
+                    <li><i class="fas fa-check"></i> <code>contract.pdf</code> (same content) → Hash: <code>a1b2c3...</code></li>
+                    <li><i class="fas fa-check"></i> System recognizes duplicate and prevents re-upload</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-terminal"></i> Stream-Based Hashing Strategy</h3>
+            <pre>const crypto = require('crypto');
+const fs = require('fs');
+
+// Create hash object
+const hash = crypto.createHash('sha256');
+
+// Stream processing (efficient for large files)
+const fileStream = fs.createReadStream('large-file.bin');
+
+fileStream.on('data', (chunk) => {
+    // Update hash with each chunk (not stored in memory)
+    hash.update(chunk);
+});
+
+fileStream.on('end', () => {
+    // Get final hash
+    const fileHash = hash.digest('hex');
+    console.log('File fingerprint:', fileHash); // e.g., "a1b2c3d4e5f6..."
+
+    // Now check database
+    checkIfHashExists(fileHash);
+});</pre>
+
+            <h3><i class="fas fa-lightbulb"></i> Why Streaming Matters</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>Memory Used</th>
+                        <th>For 1GB File</th>
+                        <th>For 20 Concurrent Users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Load Entire File</strong></td>
+                        <td>1GB per user</td>
+                        <td>1GB RAM</td>
+                        <td><span class="error-text">20GB RAM (OOM!)</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Streaming</strong></td>
+                        <td>64KB chunks</td>
+                        <td>64KB RAM</td>
+                        <td><span class="success-text">1.2MB RAM (✓ Scalable)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="interview-tip">
+                <strong>Interview Question:</strong> "If you calculate the hash AFTER saving the file to disk, what happens if it's a duplicate?"
+                <p><strong>Answer:</strong> You'd have wasted disk space. The professional approach: write to a temporary location, calculate hash, check DB, then decide whether to keep or delete.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-database"></i> Challenge 2: Database Architecture</h2>
+
+            <h3><i class="fas fa-sitemap"></i> The Many-to-Many Relationship</h3>
+
+            <div class="section-card">
+                <h3><i class="fas fa-diagram-project"></i> Three-Table Design</h3>
+                <p>To support efficient file deduplication at scale:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Primary Key</th>
+                            <th>Key Fields</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>users</strong></td>
+                            <td>id (UUID)</td>
+                            <td>email, name, subscription</td>
+                            <td>User accounts</td>
+                        </tr>
+                        <tr>
+                            <td><strong>files</strong></td>
+                            <td>id (UUID)</td>
+                            <td>hash (UNIQUE), storageKey, size</td>
+                            <td>Physical file metadata</td>
+                        </tr>
+                        <tr>
+                            <td><strong>user_files</strong></td>
+                            <td>id (UUID)</td>
+                            <td>userId (FK), fileId (FK), fileName</td>
+                            <td>Links users to files</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="best-practice">
+                <strong>Why UNIQUE constraint on hash:</strong> The database prevents duplicate hashes at the storage level. Even if code has a bug, the database protects data integrity.
+            </div>
+
+            <h3><i class="fas fa-trash"></i> Smart Deletion Logic</h3>
+
+            <div class="problem-box">
+                <h3>The Challenge</h3>
+                <p>User A and User B both have the same file. User A deletes it. What should happen?</p>
+                <ul>
+                    <li>Delete from user_files for User A only</li>
+                    <li>Check: Any other users linked to this fileId?</li>
+                    <li>If YES: Keep the physical file on S3</li>
+                    <li>If NO: Delete from S3 AND files table</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-code"></i> Reference Counting Implementation</h3>
+            <pre>async function deleteUserFile(userId, userFileId) {
+    // Step 1: Remove link in user_files table
+    await UserFile.deleteOne({ _id: userFileId, userId });
+
+    // Step 2: Get the fileId
+    const userFile = await UserFile.findById(userFileId);
+    const { fileId } = userFile;
+
+    // Step 3: Count remaining users with this file
+    const remainingUsers = await UserFile.countDocuments({ fileId });
+
+    // Step 4: If no users left, clean up
+    if (remainingUsers === 0) {
+        // Delete from database
+        const fileData = await File.findByIdAndDelete(fileId);
+
+        // Delete physical file from S3
+        await s3.deleteObject({
+            Bucket: 'my-bucket',
+            Key: fileData.storageKey
+        }).promise();
+    }
+
+    return { success: true, orphaned: remainingUsers === 0 };
+}</pre>
+
+            <h3><i class="fas fa-shield-alt"></i> The Failure Scenario</h3>
+
+            <div class="interview-tip">
+                <strong>Interview Question:</strong> "What if the database delete succeeds but S3 deletion fails?"
+                <p><strong>Answer:</strong> That's why we use <strong>transactions</strong>. In MongoDB, we use atomic operations. In SQL, we use transaction blocks. The key: if ANY step fails, ALL steps rollback.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-network-wired"></i> Challenge 3: HTTP Status Codes & REST Principles</h2>
+
+            <h3><i class="fas fa-code-branch"></i> Choosing the Right Status Code</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Status Code</th>
+                        <th>Why?</th>
+                        <th>Response Body</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>File uploaded (new)</td>
+                        <td><span class="badge green">201</span> Created</td>
+                        <td>New resource created</td>
+                        <td><code>{ status: "created", fileId: "..." }</code></td>
+                    </tr>
+                    <tr>
+                        <td>File exists (duplicate)</td>
+                        <td><span class="badge">200</span> OK</td>
+                        <td>Request succeeded, user's goal met</td>
+                        <td><code>{ status: "existing", fileId: "..." }</code></td>
+                    </tr>
+                    <tr>
+                        <td>Delete successful</td>
+                        <td><span class="badge">204</span> No Content</td>
+                        <td>Success, but nothing to return</td>
+                        <td>(empty body)</td>
+                    </tr>
+                    <tr>
+                        <td>File not found</td>
+                        <td><span class="badge red">404</span> Not Found</td>
+                        <td>Resource doesn't exist</td>
+                        <td><code>{ error: "File not found" }</code></td>
+                    </tr>
+                    <tr>
+                        <td>Validation failed</td>
+                        <td><span class="badge red">400</span> Bad Request</td>
+                        <td>Client sent invalid data</td>
+                        <td><code>{ error: "Invalid hash format" }</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="best-practice">
+                <strong>UX Consideration:</strong> Sending 409 Conflict for a duplicate upload might make users think something went wrong. 200 OK with metadata in the response is better for UX while being technically correct.
+            </div>
+
+            <h2><i class="fas fa-database"></i> Challenge 4: Choosing Your Database</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>PostgreSQL (SQL)</th>
+                        <th>MongoDB (NoSQL)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Many-to-Many</strong></td>
+                        <td><span class="success-text">✓ Native support</span></td>
+                        <td>Manual with junction collection</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Foreign Keys</strong></td>
+                        <td><span class="success-text">✓ Enforced</span></td>
+                        <td>Manual validation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transactions</strong></td>
+                        <td><span class="success-text">✓ ACID</span></td>
+                        <td>Available but slower</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Performance</strong></td>
+                        <td>Structured queries</td>
+                        <td><span class="success-text">✓ Faster writes</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scalability</strong></td>
+                        <td>Vertical scaling</td>
+                        <td><span class="success-text">✓ Horizontal scaling</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="interview-tip">
+                <strong>Senior Developer Wisdom:</strong> "Choose the database your team knows well. A well-implemented MongoDB system beats a poorly-implemented PostgreSQL system. But for Many-to-Many relationships with complex queries, SQL wins."
+            </div>
+
+            <h2><i class="fas fa-rocket"></i> Complete Upload Workflow (40 LPA Design)</h2>
+
+            <div class="dry-run">User uploads file.pdf (50MB)
+
+Step 1: Browser calculates SHA-256 hash
+  └─ Hash: "a1b2c3d4e5f6..."
+
+Step 2: Browser calls GET /files/check-duplicate?hash=a1b2c3...
+  └─ Server queries: db.files.findOne({ hash: "a1b2c3..." })
+
+Step 3a (If duplicate):
+  └─ Server returns existing fileId
+  └─ Create link in user_files
+  └─ Return 200 OK (user sees success)
+  └─ S3 transfer skipped (saves bandwidth!)
+
+Step 3b (If new):
+  └─ Server generates Presigned URL
+  └─ Browser uploads directly to S3
+  └─ Server creates File document
+  └─ Server creates user_files link
+  └─ Return 201 Created
+
+Total time saved if duplicate: 50MB download time + 50MB upload time ✓</div>
+
+            <h2><i class="fas fa-trophy"></i> Real-World Applications</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-google"></i>
+                    <h4>Google Drive</h4>
+                    <p>Stores billions of files. Deduplication saves petabytes of storage.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-dropbox"></i>
+                    <h4>Dropbox</h4>
+                    <p>When you upload a file that already exists, it's instant.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-aws"></i>
+                    <h4>AWS S3</h4>
+                    <p>Uses content-addressing internally for deduplication.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-github"></i>
+                    <h4>Git / GitHub</h4>
+                    <p>SHA-1 hashing ensures identical code isn't stored twice.</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-exclamation-triangle"></i> Common Mistakes to Avoid</h2>
+
+            <div class="problem-box">
+                <h3>Mistake 1: Not Handling Edge Cases</h3>
+                <p><strong>Problem:</strong> What if the file is 0 bytes? What if hash calculation fails?</p>
+                <p><strong>Solution:</strong> Validate at every step. Empty files need special handling.</p>
+            </div>
+
+            <div class="problem-box">
+                <h3>Mistake 2: Trusting the Client Hash</h3>
+                <p><strong>Problem:</strong> Browser sends hash, but user might be malicious.</p>
+                <p><strong>Solution:</strong> Always recalculate on server. Use client hash as optimization hint only.</p>
+            </div>
+
+            <div class="problem-box">
+                <h3>Mistake 3: Race Conditions</h3>
+                <p><strong>Problem:</strong> Two uploads with same hash arrive simultaneously.</p>
+                <p><strong>Solution:</strong> Database UNIQUE constraint prevents duplicates atomically.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-graduation-cap"></i> Key Takeaways</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-check-double"></i> What You've Learned</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <strong>Idempotency:</strong> Design APIs that prevent duplicate operations</li>
+                    <li><i class="fas fa-check"></i> <strong>Content Hashing:</strong> SHA-256 fingerprints enable deduplication</li>
+                    <li><i class="fas fa-check"></i> <strong>Stream Processing:</strong> Handle massive files without memory overflow</li>
+                    <li><i class="fas fa-check"></i> <strong>Database Design:</strong> Many-to-Many with reference counting prevents data loss</li>
+                    <li><i class="fas fa-check"></i> <strong>Data Integrity:</strong> Transactions ensure consistency across disk and DB</li>
+                    <li><i class="fas fa-check"></i> <strong>REST Best Practices:</strong> Status codes communicate intent to clients</li>
+                </ul>
+            </div>
+
+            <h2><i class="fas fa-book"></i> Further Reading & Resources</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-file-pdf"></i>
+                    <h4>Hash Functions</h4>
+                    <p>Study SHA-256, MD5, and why certain hashes are cryptographically secure</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-database"></i>
+                    <h4>Relational DBs</h4>
+                    <p>Deep dive into ACID properties, transactions, and foreign keys</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-cloud"></i>
+                    <h4>AWS S3 Concepts</h4>
+                    <p>Presigned URLs, multipart uploads, and object versioning</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-stream"></i>
+                    <h4>Node.js Streams</h4>
+                    <p>Master readable, writable, and transform streams</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2><i class="fas fa-headset"></i> Interview Preparation</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-question-circle"></i> Common Questions</h3>
+                <ul>
+                    <li><strong>Q: "How would you detect file duplicates at scale?"</strong><br/>A: Content hashing (SHA-256) + indexed database lookup. O(1) to check, not O(n).</li>
+                    <li><strong>Q: "What if someone uploads 1TB in 1KB chunks?"</strong><br/>A: Streaming ensures constant memory usage, not linear scaling with file size.</li>
+                    <li><strong>Q: "How would you prevent race conditions?"</strong><br/>A: UNIQUE constraints + database transactions ensure atomicity.</li>
+                    <li><strong>Q: "Why not store the filename as the UNIQUE key?"</strong><br/>A: Users can name the same file differently. Content (hash) is the true unique identifier.</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 3 Day 1 - Idempotency & Hashing</h3>
+            <p>Master the architectural patterns that power production-grade systems</p>
+
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 04-05-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">These are 40 LPA system design patterns used at scale by major tech companies.</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <div class="watermark">© Baljeet Gunghas - Professional Education Material</div>
+        </div>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            const downloadContainer = document.querySelector('.download-btn-container');
+            downloadContainer.style.display = 'none';
+
+            alert('Print Settings Instructions:\n\n1. Click "More settings" or ⚙️ icon\n2. UNCHECK "Headers and footers"\n3. Click "Save as PDF"\n\nThis will create a clean PDF.');
+
+            setTimeout(() => {
+                window.print();
+
+                setTimeout(() => {
+                    downloadContainer.style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

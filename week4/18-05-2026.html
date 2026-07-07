@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Memory, Execution Context & Call Stack - Week 4</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+
+        .watermark {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #3498db;
+            opacity: 0.6;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .header-info strong {
+            color: #fff;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 i {
+            font-size: 1.3em;
+            color: #3498db;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 i {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        ul,
+        ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: 500;
+            border: 1px solid #bdc3c7;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        .problem-box {
+            background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            page-break-inside: avoid;
+        }
+
+        .problem-box h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+
+        .problem-box p {
+            color: #34495e;
+        }
+
+        .dry-run {
+            background: #f0fdf4;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95em;
+            color: #1e5631;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d4edda;
+            page-break-inside: avoid;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        table thead {
+            background: #3498db;
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+            color: #2c3e50;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #ecf0f1;
+            transition: 0.3s;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+
+        .section-card {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+            background: #f8f9fa;
+        }
+
+        .section-card h3 {
+            color: #2980b9;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card p {
+            color: #34495e;
+        }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .array-visual {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .array-item {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .array-item.zero {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .array-item.empty {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            opacity: 0.5;
+        }
+
+        .array-item.highlight {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+            text-align: center;
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .feature-box:hover {
+            background: #e8f1f9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .feature-box i {
+            font-size: 2.5em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .comparison-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-item {
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .chart-item strong {
+            color: #2980b9;
+        }
+
+        .chart-item p {
+            color: #34495e;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+            page-break-after: avoid;
+        }
+
+        .icon-list {
+            list-style: none;
+        }
+
+        .icon-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34495e;
+        }
+
+        .icon-list i {
+            color: #3498db;
+            width: 24px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .badge.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .badge.yellow {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .social-link i {
+            font-size: 1.2em;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link.github {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        .social-link.github:hover {
+            box-shadow: 0 8px 20px rgba(51, 51, 51, 0.4);
+        }
+
+        .social-link.twitter {
+            background: linear-gradient(135deg, #1da1f2, #1a91da);
+        }
+
+        .social-link.twitter:hover {
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .social-link.linkedin {
+            background: linear-gradient(135deg, #0077b5, #005a9a);
+        }
+
+        .social-link.linkedin:hover {
+            box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4);
+        }
+
+        .social-link.instagram {
+            background: linear-gradient(135deg, #e1306c, #c13584);
+        }
+
+        .social-link.instagram:hover {
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .success-text {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .error-text {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .memory-diagram {
+            background: #f8f9fa;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+
+        .stack-frame {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .memory-cell {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .interview-qa {
+            background: #f0f4f8;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            page-break-inside: avoid;
+        }
+
+        .interview-qa strong {
+            color: #f39c12;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .interview-qa .answer {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            color: #34495e;
+        }
+
+        .code-annotation {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        @page {
+            margin: 0.5cm;
+            size: A4 portrait;
+        }
+
+        @media print {
+            * {
+                box-shadow: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                position: relative;
+            }
+
+            .watermark {
+                display: block !important;
+                text-align: center !important;
+                font-size: 13px !important;
+                color: #3498db !important;
+                opacity: 0.8 !important;
+                padding: 10px 0 !important;
+                font-weight: bold !important;
+                border-top: 1px solid #ddd !important;
+                page-break-inside: avoid !important;
+                margin-top: 20px !important;
+            }
+
+            .download-btn-container {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header {
+                page-break-after: avoid;
+                padding: 20px;
+            }
+
+            .content {
+                padding: 15px 20px;
+            }
+
+            h2 {
+                margin-top: 15px;
+                margin-bottom: 10px;
+                page-break-after: avoid;
+            }
+
+            h3 {
+                page-break-after: avoid;
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+
+            p {
+                margin-bottom: 8px;
+            }
+
+            .section-card {
+                page-break-inside: avoid;
+                border: 1px solid #bdc3c7;
+                margin: 10px 0;
+            }
+
+            .problem-box {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                padding: 15px;
+            }
+
+            .feature-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            pre {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            table {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                font-size: 0.9em;
+            }
+
+            .dry-run {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            .svg-container {
+                page-break-inside: avoid;
+                margin: 15px 0;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            .social-links {
+                page-break-inside: avoid;
+                margin: 15px 0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .footer {
+                page-break-inside: avoid;
+                margin-top: 20px;
+                padding: 20px;
+            }
+
+            a {
+                color: #3498db;
+                text-decoration: underline;
+            }
+
+            .social-link {
+                display: inline-flex;
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-memory"></i> 🧠
+                </div>
+                <h1>JavaScript Memory, Execution Context & Call Stack</h1>
+                <p>Understanding the Engine Under the Hood</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 18-05-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 4</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week4/18-05-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Memory allocation, execution contexts, call stacks, stack overflow, and the foundation for stack-based DSA</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Social Links at Top -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- INTRODUCTION -->
+            <h2><i class="fas fa-book"></i> Introduction: The Foundation of Senior Engineers</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-star"></i> Why This Matters</h3>
+                <p>Understanding how JavaScript manages memory and execution is what separates senior engineers from junior developers. In high-tier interviews at FAANG companies, interviewers test your depth with questions like:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-question-circle"></i> "Explain the difference between stack and heap memory"</li>
+                    <li><i class="fas fa-question-circle"></i> "What causes stack overflow and how do you prevent it?"</li>
+                    <li><i class="fas fa-question-circle"></i> "How does hoisting work under the hood?"</li>
+                    <li><i class="fas fa-question-circle"></i> "Can you debug a memory leak in this code?"</li>
+                    <li><i class="fas fa-question-circle"></i> "What is the temporal dead zone?"</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>This lesson is your complete guide to mastering all of these topics.</strong></p>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- CONCEPTS SECTION -->
+            <h2><i class="fas fa-puzzle-piece"></i> Core Concepts Covered</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-brain"></i>
+                    <h4>Execution Context</h4>
+                    <p>Creation and execution phases, variable hoisting, and scope binding</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-layer-group"></i>
+                    <h4>Stack vs Heap</h4>
+                    <p>Memory allocation for primitives vs reference types</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-list"></i>
+                    <h4>Call Stack</h4>
+                    <p>LIFO principle, frame creation, and destruction</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Stack Overflow</h4>
+                    <p>Maximum call stack size and optimization strategies</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-memory"></i>
+                    <h4>Garbage Collection</h4>
+                    <p>Memory reclamation and memory leak patterns</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-tools"></i>
+                    <h4>DevTools Debugging</h4>
+                    <p>Chrome Memory profiler, heap snapshots, and allocation timeline</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 1: EXECUTION CONTEXT -->
+            <h2><i class="fas fa-hourglass-start"></i> Part 1: The Execution Context & Memory Allocation</h2>
+
+            <p>Before any JavaScript code runs, the engine (V8, SpiderMonkey, JavaScriptCore) creates an <strong>Execution Context</strong> - the environment where code is evaluated. Think of it as a container that holds everything your code needs to execute.</p>
+
+            <h3><i class="fas fa-database"></i> The Two Major Memory Structures</h3>
+
+            <div class="memory-diagram">
+                <h4 style="color: #2980b9; margin-bottom: 15px;">Memory Layout in JavaScript Engine</h4>
+                <div class="svg-container">
+                    <svg width="600" height="350" viewBox="0 0 600 350">
+                        <!-- Memory Overview -->
+                        <text x="20" y="25" font-size="14" font-weight="bold" fill="#2980b9">MEMORY ARCHITECTURE</text>
+
+                        <!-- Stack Section -->
+                        <rect x="20" y="50" width="250" height="280" fill="#ecf0f1" stroke="#3498db" stroke-width="2" rx="8"/>
+                        <text x="35" y="75" font-size="13" font-weight="bold" fill="#2980b9">STACK</text>
+
+                        <!-- Stack frames -->
+                        <rect x="35" y="95" width="220" height="35" fill="#3498db" stroke="#2980b9" stroke-width="1" rx="3"/>
+                        <text x="45" y="110" font-size="11" font-weight="bold" fill="white">Global Context</text>
+                        <text x="45" y="125" font-size="10" fill="#ecf0f1">Variables: a, b, greet()</text>
+
+                        <rect x="35" y="140" width="220" height="35" fill="#2980b9" stroke="#1a5276" stroke-width="1" rx="3"/>
+                        <text x="45" y="155" font-size="11" font-weight="bold" fill="white">greet() Context</text>
+                        <text x="45" y="170" font-size="10" fill="#ecf0f1">Variables: name</text>
+
+                        <rect x="35" y="185" width="220" height="35" fill="#1a5276" stroke="#0f3862" stroke-width="1" rx="3"/>
+                        <text x="45" y="200" font-size="11" font-weight="bold" fill="white">getName() Context ← Top (Active)</text>
+                        <text x="45" y="215" font-size="10" fill="#ecf0f1">Variables: -</text>
+
+                        <text x="45" y="250" font-size="10" fill="#34495e">⬆ Push on call</text>
+                        <text x="45" y="268" font-size="10" fill="#34495e">⬇ Pop on return</text>
+                        <text x="45" y="286" font-size="10" fill="#34495e">LIFO: Last In, First Out</text>
+                        <text x="45" y="305" font-size="10" fill="#34495e">Fixed size, fast access</text>
+
+                        <!-- Heap Section -->
+                        <rect x="330" y="50" width="250" height="280" fill="#fef5e7" stroke="#f39c12" stroke-width="2" rx="8"/>
+                        <text x="345" y="75" font-size="13" font-weight="bold" fill="#d68910">HEAP</text>
+
+                        <!-- Heap objects -->
+                        <rect x="345" y="95" width="220" height="50" fill="#f39c12" stroke="#d68910" stroke-width="1" rx="3"/>
+                        <text x="360" y="110" font-size="10" font-weight="bold" fill="white">0x0001: Object</text>
+                        <text x="360" y="128" font-size="9" fill="white">name: "Baljeet"</text>
+                        <text x="360" y="142" font-size="9" fill="white">age: 25</text>
+
+                        <rect x="345" y="155" width="220" height="50" fill="#e67e22" stroke="#d35400" stroke-width="1" rx="3"/>
+                        <text x="360" y="170" font-size="10" font-weight="bold" fill="white">0x0002: Array</text>
+                        <text x="360" y="188" font-size="9" fill="white">[1, 2, 3, 4, 5]</text>
+
+                        <rect x="345" y="215" width="220" height="50" fill="#d35400" stroke="#ba4a00" stroke-width="1" rx="3"/>
+                        <text x="360" y="230" font-size="10" font-weight="bold" fill="white">0x0003: Function</text>
+                        <text x="360" y="248" font-size="9" fill="white">toString() {...}</text>
+
+                        <text x="360" y="290" font-size="10" fill="#34495e">Dynamic allocation</text>
+                        <text x="360" y="308" font-size="10" fill="#34495e">Garbage collected</text>
+                        <text x="360" y="326" font-size="10" fill="#34495e">Referenced by pointers</text>
+                    </svg>
+                </div>
+            </div>
+
+            <h4><i class="fas fa-cube"></i> 1. The Call Stack</h4>
+            <p>A highly structured, <strong>fast</strong> memory space for:</p>
+            <ul class="icon-list">
+                <li><i class="fas fa-dot-circle"></i> <strong>Primitive Types:</strong> Numbers, strings, booleans, symbols, undefined, null</li>
+                <li><i class="fas fa-dot-circle"></i> <strong>Execution Contexts (Stack Frames):</strong> Each function call creates a frame</li>
+                <li><i class="fas fa-dot-circle"></i> <strong>Pointers to Heap:</strong> Reference variables point to heap objects</li>
+            </ul>
+
+            <h4><i class="fas fa-boxes"></i> 2. The Memory Heap</h4>
+            <p>A large, <strong>mostly unstructured</strong> region for:</p>
+            <ul class="icon-list">
+                <li><i class="fas fa-dot-circle"></i> <strong>Reference Types:</strong> Objects, arrays, functions</li>
+                <li><i class="fas fa-dot-circle"></i> <strong>Dynamic Allocation:</strong> Size can change at runtime</li>
+                <li><i class="fas fa-dot-circle"></i> <strong>Garbage Collection:</strong> Memory is reclaimed when unreachable</li>
+            </ul>
+
+            <h3><i class="fas fa-layer-group"></i> The Dual-Phase Lifecycle of Execution Context</h3>
+
+            <div class="section-card">
+                <h3><i class="fas fa-cog"></i> Phase 1: Creation Phase</h3>
+                <p>This is where the magic of hoisting happens:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Engine creates the <code>window</code> (browser) or <code>global</code> (Node.js) object</li>
+                    <li><i class="fas fa-check-circle"></i> Sets up <code>this</code> binding</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Hoists function declarations:</strong> Entire functions stored in heap, names added to scope</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Hoists variable declarations:</strong> Names added to scope, values set to <code>undefined</code></li>
+                    <li><i class="fas fa-check-circle"></i> Creates scope chains and closure references</li>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-play-circle"></i> Phase 2: Execution Phase</h3>
+                <p>Code runs line-by-line:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Assign values to variables</li>
+                    <li><i class="fas fa-check-circle"></i> Execute function calls</li>
+                    <li><i class="fas fa-check-circle"></i> Create new execution contexts for each function</li>
+                    <li><i class="fas fa-check-circle"></i> Eventually pop contexts and reclaim memory</li>
+                </ul>
+            </div>
+
+            <h4><i class="fas fa-terminal"></i> Hoisting Visualization</h4>
+            <div class="code-annotation">
+                <strong>What you write:</strong>
+                <pre>console.log(x);     // What is x here?
+var x = 5;
+console.log(x);     // What is x here?
+getName();          // Will this work?
+
+function getName() {
+  return "Baljeet";
+}</pre>
+
+                <strong>What the engine sees (Creation Phase):</strong>
+                <pre>// Variables hoisted as undefined
+var x = undefined;
+
+// Function hoisted completely
+function getName() {
+  return "Baljeet";
+}
+
+// --- Now Execution Phase Begins ---
+console.log(x);     // undefined (not an error!)
+x = 5;              // Assignment happens here
+console.log(x);     // 5
+getName();          // Works perfectly! Already defined</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 2: CALL STACK VISUALIZATION -->
+            <h2><i class="fas fa-stack"></i> Part 2: The Call Stack in Action</h2>
+
+            <p>The JavaScript engine runs on a <strong>single thread</strong>, meaning it can only execute one piece of code at a time. To manage multiple function calls, it uses a <strong>Call Stack</strong> that follows <strong>LIFO (Last In, First Out)</strong> principle.</p>
+
+            <h3><i class="fas fa-glasses"></i> Complete Call Stack Visualization</h3>
+
+            <div class="svg-container">
+                <svg width="800" height="450" viewBox="0 0 800 450">
+                    <!-- Title -->
+                    <text x="30" y="25" font-size="15" font-weight="bold" fill="#2980b9">CALL STACK PROGRESSION: greet() and getName()</text>
+
+                    <!-- Step 1 -->
+                    <text x="30" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 1: Global Context Created</text>
+                    <rect x="30" y="70" width="80" height="60" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="70" y="95" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Global</text>
+                    <text x="70" y="125" font-size="9" text-anchor="middle" fill="#2980b9">← Bottom</text>
+
+                    <!-- Step 2 -->
+                    <text x="150" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 2: greet() Called</text>
+                    <rect x="150" y="70" width="80" height="35" fill="#2980b9" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="190" y="95" font-size="11" font-weight="bold" fill="white" text-anchor="middle">greet()</text>
+                    <rect x="150" y="105" width="80" height="25" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="190" y="122" font-size="10" fill="white" text-anchor="middle">Global</text>
+
+                    <!-- Step 3 -->
+                    <text x="270" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 3: getName() Called</text>
+                    <rect x="270" y="70" width="80" height="25" fill="#1a5276" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="310" y="90" font-size="11" font-weight="bold" fill="white" text-anchor="middle">getName()</text>
+                    <rect x="270" y="95" width="80" height="20" fill="#2980b9" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="310" y="109" font-size="9" fill="white" text-anchor="middle">greet()</text>
+                    <rect x="270" y="115" width="80" height="25" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="310" y="132" font-size="10" fill="white" text-anchor="middle">Global</text>
+
+                    <!-- Step 4 -->
+                    <text x="390" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 4: getName() Returns</text>
+                    <rect x="390" y="70" width="80" height="35" fill="#2980b9" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="430" y="95" font-size="11" font-weight="bold" fill="white" text-anchor="middle">greet()</text>
+                    <rect x="390" y="105" width="80" height="25" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="430" y="122" font-size="10" fill="white" text-anchor="middle">Global</text>
+                    <text x="430" y="145" font-size="9" text-anchor="middle" fill="#27ae60" font-weight="bold">✓ getName popped</text>
+
+                    <!-- Step 5 -->
+                    <text x="510" y="55" font-size="12" font-weight="bold" fill="#2980b9">Step 5: greet() Returns</text>
+                    <rect x="510" y="70" width="80" height="60" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                    <text x="550" y="95" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Global</text>
+                    <text x="550" y="125" font-size="9" text-anchor="middle" fill="#27ae60" font-weight="bold">✓ greet() popped</text>
+
+                    <!-- Code Example -->
+                    <text x="30" y="220" font-size="12" font-weight="bold" fill="#2980b9">Code Being Executed:</text>
+                    <rect x="30" y="235" width="550" height="200" fill="#2c3e50" stroke="#2980b9" stroke-width="1" rx="5"/>
+                    <text x="45" y="255" font-size="11" fill="#ecf0f1" font-family="Courier New">function greet() {</text>
+                    <text x="60" y="275" font-size="11" fill="#ecf0f1" font-family="Courier New">  return "Hello " + getName();</text>
+                    <text x="45" y="295" font-size="11" fill="#ecf0f1" font-family="Courier New">}</text>
+                    <text x="45" y="320" font-size="11" fill="#ecf0f1" font-family="Courier New">function getName() {</text>
+                    <text x="60" y="340" font-size="11" fill="#ecf0f1" font-family="Courier New">  return "Baljeet";  // Step 3: Engine is here</text>
+                    <text x="45" y="360" font-size="11" fill="#ecf0f1" font-family="Courier New">}</text>
+                    <text x="45" y="385" font-size="11" fill="#ecf0f1" font-family="Courier New">greet();  // Stack gets populated here</text>
+                    <text x="45" y="405" font-size="11" fill="#3498db" font-family="Courier New">// Step 1: Global created, Step 2: greet() called, Step 3: getName() called</text>
+                </svg>
+            </div>
+
+            <h3><i class="fas fa-memory"></i> Stack Frame Details</h3>
+
+            <div class="memory-diagram">
+                <h4 style="color: #2980b9; margin-bottom: 15px;">What's Inside a Stack Frame?</h4>
+                <div class="stack-frame">
+                    <strong>Global Execution Context Frame:</strong>
+                    <pre>
+{
+  this: window/global,
+  variables: {
+    x: 5,
+    greet: <function>,
+    getName: <function>
+  },
+  scopeChain: [global],
+  outer: null
+}</pre>
+                </div>
+                <div class="stack-frame">
+                    <strong>greet() Execution Context Frame:</strong>
+                    <pre>
+{
+  this: window (unless called with new or .call()),
+  variables: {
+    // No local variables in this example
+  },
+  scopeChain: [greet scope, global scope],
+  outer: global context
+}</pre>
+                </div>
+                <div class="stack-frame">
+                    <strong>getName() Execution Context Frame:</strong>
+                    <pre>
+{
+  this: window,
+  variables: {
+    // No local variables
+  },
+  scopeChain: [getName scope, global scope],
+  outer: global context
+}</pre>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 3: STACK OVERFLOW -->
+            <h2><i class="fas fa-exclamation-triangle"></i> Part 3: Stack Overflow & System Limits</h2>
+
+            <p>The call stack has a <strong>fixed, finite size</strong>. When you exceed this limit, the engine throws a <code>RangeError: Maximum call stack size exceeded</code>.</p>
+
+            <h3><i class="fas fa-bomb"></i> What Causes Stack Overflow?</h3>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Infinite Recursion (The Most Common Culprit)</h4>
+            <pre>function recurse() {
+  console.log("Recursing...");
+  recurse();  // No base case! This will crash
+}
+
+recurse();
+// Output: Uncaught RangeError: Maximum call stack size exceeded</pre>
+
+            <h3><i class="fas fa-chart-bar"></i> Stack Limit by Browser</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>JavaScript Engine</th>
+                        <th>Browser/Runtime</th>
+                        <th>Approximate Limit</th>
+                        <th>Test Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>V8</strong></td>
+                        <td>Chrome, Edge, Node.js</td>
+                        <td>10,000 - 15,000 frames</td>
+                        <td>Deep recursion test</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SpiderMonkey</strong></td>
+                        <td>Firefox</td>
+                        <td>20,000 - 25,000 frames</td>
+                        <td>Slightly higher limit</td>
+                    </tr>
+                    <tr>
+                        <td><strong>JavaScriptCore</strong></td>
+                        <td>Safari, iOS</td>
+                        <td>8,000 - 12,000 frames</td>
+                        <td>More conservative</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chakra</strong></td>
+                        <td>Older IE</td>
+                        <td>5,000 - 10,000 frames</td>
+                        <td>Strict limits</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3><i class="fas fa-code"></i> Finding Your Stack Depth</h3>
+
+            <div class="code-annotation">
+                <strong>JavaScript function to test stack depth:</strong>
+                <pre>function getStackDepth() {
+  let depth = 0;
+
+  function recurse() {
+    depth++;
+    recurse();
+  }
+
+  try {
+    recurse();
+  } catch(e) {
+    console.log(`Maximum stack depth: ${depth}`);
+  }
+
+  return depth;
+}
+
+const maxDepth = getStackDepth();
+// Chrome: ~15,000
+// Firefox: ~20,000
+// Safari: ~10,000
+// Node.js: ~12,000</pre>
+            </div>
+
+            <h3><i class="fas fa-check-circle"></i> Prevention & Optimization Strategies</h3>
+
+            <h4><span class="badge">Strategy 1</span> Convert Recursion to Iteration</h4>
+            <div class="code-annotation">
+                <strong>❌ Recursive (Stack Overflow Risk):</strong>
+                <pre>function factorial(n) {
+  if (n <= 1) return 1;
+  return n * factorial(n - 1);  // Deep stack for large n
+}
+
+factorial(10000);  // Stack overflow!</pre>
+
+                <strong>✓ Iterative (Safe):</strong>
+                <pre>function factorial(n) {
+  let result = 1;
+  for (let i = 2; i <= n; i++) {
+    result *= i;
+  }
+  return result;
+}
+
+factorial(10000);  // Works perfectly, O(1) space</pre>
+            </div>
+
+            <h4><span class="badge yellow">Strategy 2</span> Tail Call Optimization (TCO)</h4>
+            <p>In strict mode, some engines optimize tail calls (Chrome V8 doesn't, but SpiderMonkey does):</p>
+            <div class="code-annotation">
+                <pre>// Strict mode with tail call
+'use strict';
+
+function factorial(n, acc = 1) {
+  if (n <= 1) return acc;
+  return factorial(n - 1, n * acc);  // Tail call - can be optimized
+}
+
+// Note: V8 (Chrome) doesn't implement TCO yet, but this is valid in SpiderMonkey (Firefox)</pre>
+            </div>
+
+            <h4><span class="badge red">Strategy 3</span> Use Trampoline Pattern</h4>
+            <div class="code-annotation">
+                <pre>// Trampoline for safe recursion
+function trampoline(fn) {
+  let result = fn();
+  while (typeof result === 'function') {
+    result = result();
+  }
+  return result;
+}
+
+function factorial(n, acc = 1) {
+  if (n <= 1) return acc;
+  return () => factorial(n - 1, n * acc);  // Return function instead of calling
+}
+
+const result = trampoline(() => factorial(10000));  // Works safely!</pre>
+            </div>
+
+            <h4><span class="badge">Strategy 4</span> Batch Processing</h4>
+            <p>Use <code>setTimeout</code> or <code>setImmediate</code> to let the call stack clear between iterations:</p>
+            <div class="code-annotation">
+                <pre>function processLargeArray(arr, batchSize = 1000) {
+  let index = 0;
+
+  function processBatch() {
+    const end = Math.min(index + batchSize, arr.length);
+
+    for (let i = index; i < end; i++) {
+      // Process arr[i]
+    }
+
+    index = end;
+
+    if (index < arr.length) {
+      setTimeout(processBatch, 0);  // Let stack clear
+    }
+  }
+
+  processBatch();
+}
+
+processLargeArray(new Array(1000000));</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 4: STACK VS HEAP -->
+            <h2><i class="fas fa-balance-scale"></i> Part 4: Complete Stack vs Heap Comparison</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Stack</th>
+                        <th>Heap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Data Types</strong></td>
+                        <td>Primitives: number, string, boolean, symbol, undefined, null</td>
+                        <td>Reference Types: objects, arrays, functions, dates</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Memory Model</strong></td>
+                        <td>LIFO (Last In, First Out)</td>
+                        <td>Unordered collection</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Allocation</strong></td>
+                        <td>Automatic, fast, synchronous</td>
+                        <td>Dynamic, slightly slower</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deallocation</strong></td>
+                        <td>Automatic when function returns</td>
+                        <td>Garbage collected when unreachable</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Size Limit</strong></td>
+                        <td>Fixed, ~1-8MB per thread</td>
+                        <td>Dynamic, ~100MB-2GB or more</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Access Speed</strong></td>
+                        <td>O(1), fastest</td>
+                        <td>O(1), but with pointer dereferencing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thread Safety</strong></td>
+                        <td>Per-thread, no sharing</td>
+                        <td>Shared, requires GC coordination</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fragmentation</strong></td>
+                        <td>None, perfect compaction</td>
+                        <td>Can fragment over time</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scope</strong></td>
+                        <td>Local to execution context</td>
+                        <td>Global visibility via pointers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cache Friendly</strong></td>
+                        <td>Excellent locality of reference</td>
+                        <td>Poor locality, cache misses common</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3><i class="fas fa-code"></i> Visual Example: Primitives vs References</h3>
+
+            <div class="code-annotation">
+                <strong>Primitives (Stack):</strong>
+                <pre>let a = 5;
+let b = a;
+b = 10;
+
+console.log(a);  // 5 (unchanged! Separate values in stack)
+console.log(b);  // 10
+
+// Memory:
+// Stack: a: 5, b: 5 → (after b=10) → a: 5, b: 10</pre>
+
+                <strong>References (Heap):</strong>
+                <pre>let obj1 = { age: 5 };
+let obj2 = obj1;
+obj2.age = 10;
+
+console.log(obj1.age);  // 10 (changed! Same heap reference)
+console.log(obj2.age);  // 10
+
+// Memory:
+// Stack: obj1: 0x1001, obj2: 0x1001
+// Heap: {age: 5} → {age: 10} at address 0x1001</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 5: GARBAGE COLLECTION -->
+            <h2><i class="fas fa-trash"></i> Part 5: Garbage Collection & Memory Leaks</h2>
+
+            <h3><i class="fas fa-recycle"></i> How Garbage Collection Works</h3>
+
+            <p>Modern JavaScript engines use sophisticated garbage collection algorithms to reclaim memory. The two main approaches are:</p>
+
+            <h4><strong>1. Mark-and-Sweep Algorithm</strong></h4>
+            <div class="section-card">
+                <h3><i class="fas fa-search"></i> How It Works</h3>
+                <ol>
+                    <li><strong>Mark Phase:</strong> Engine starts from root (global object) and marks all reachable objects</li>
+                    <li><strong>Sweep Phase:</strong> Any unmarked objects are considered garbage and deallocated</li>
+                    <li><strong>Compact Phase (Optional):</strong> Remaining objects are moved to fill gaps and improve cache locality</li>
+                </ol>
+            </div>
+
+            <h4><strong>2. Generational Collection</strong></h4>
+            <div class="section-card">
+                <h3><i class="fas fa-layers"></i> V8's Generational Approach</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>Young Generation:</strong> Objects that are newly created, collected frequently (every few ms)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Old Generation:</strong> Objects that survived multiple GC cycles, collected less frequently</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Insight:</strong> Most objects die young - this optimizes for the common case</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-warning"></i> Common Memory Leak Patterns</h3>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Leak 1: Forgotten Timers</h4>
+            <div class="code-annotation">
+                <pre>function setupTimer() {
+  const largeData = new Array(1000000);
+
+  setInterval(() => {
+    console.log(largeData.length);  // Timer keeps largeData alive
+  }, 1000);
+
+  // Never cleared! largeData leaks indefinitely
+}
+
+// ✓ Fix:
+function setupTimerFixed() {
+  const largeData = new Array(1000000);
+  const timerId = setInterval(() => {
+    console.log(largeData.length);
+  }, 1000);
+
+  // Later: clearInterval(timerId);
+}</pre>
+            </div>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Leak 2: Forgotten Event Listeners</h4>
+            <div class="code-annotation">
+                <pre>// ❌ Memory leak:
+function attachListener() {
+  const button = document.getElementById('myBtn');
+  button.addEventListener('click', () => {
+    console.log('Clicked!');
+  });
+  // Listener never removed!
+}
+
+// ✓ Fix:
+function attachListenerFixed() {
+  const button = document.getElementById('myBtn');
+  const handler = () => console.log('Clicked!');
+
+  button.addEventListener('click', handler);
+
+  // Later: button.removeEventListener('click', handler);
+}</pre>
+            </div>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Leak 3: Global Variables</h4>
+            <div class="code-annotation">
+                <pre>// ❌ Accidental global variable:
+function processData() {
+  largeData = new Array(1000000);  // No 'let', 'const', or 'var' = global!
+  // Now it's on window and never gets GC'd
+}
+
+// ✓ Fix:
+function processDataFixed() {
+  const largeData = new Array(1000000);  // Scoped, will be GC'd
+}</pre>
+            </div>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Leak 4: Detached DOM Nodes</h4>
+            <div class="code-annotation">
+                <pre>// ❌ DOM node leak:
+const detachedDiv = document.querySelector('div');
+const reference = detachedDiv;  // Keep reference
+document.body.removeChild(detachedDiv);  // Remove from DOM
+// But reference still exists! Node kept in memory
+
+// ✓ Fix:
+const div = document.querySelector('div');
+// ... use it ...
+document.body.removeChild(div);
+div = null;  // Clear reference explicitly</pre>
+            </div>
+
+            <h4 style="color: #e74c3c;"><i class="fas fa-times-circle"></i> Leak 5: Circular References</h4>
+            <div class="code-annotation">
+                <pre>// ❌ Circular reference (old browsers):
+function createCircular() {
+  const obj1 = {};
+  const obj2 = {};
+
+  obj1.ref = obj2;
+  obj2.ref = obj1;  // Circular!
+
+  // Modern GC handles this, but be aware
+}
+
+// ✓ Best practice:
+function createSafe() {
+  const obj1 = { data: 'value' };
+  // Don't create circular refs if avoidable
+}</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 6: TEMPORAL DEAD ZONE -->
+            <h2><i class="fas fa-hourglass-end"></i> Part 6: The Temporal Dead Zone (TDZ)</h2>
+
+            <p>This is a crucial concept often missed by junior developers but tested heavily in interviews.</p>
+
+            <h3><i class="fas fa-exclamation-triangle"></i> What is TDZ?</h3>
+
+            <p>The Temporal Dead Zone is the period between function entry and the point where a <code>let</code> or <code>const</code> variable is declared. During this period, the variable exists but is <strong>uninitialized</strong> and accessing it throws a <code>ReferenceError</code>.</p>
+
+            <div class="code-annotation">
+                <pre>function example() {
+  console.log(x);  // ReferenceError: Cannot access 'x' before initialization
+
+  let x = 5;  // ← TDZ ends here
+}
+
+// Why does this matter?
+// 1. x is hoisted (engine knows it exists)
+// 2. But it's not initialized to undefined
+// 3. Accessing it before declaration = error, not undefined!
+
+// Compare with var:
+function exampleVar() {
+  console.log(y);  // undefined (hoisted and initialized)
+  var y = 5;
+}
+
+// var is initialized to undefined during creation phase
+// let/const are not initialized until the declaration statement executes</pre>
+            </div>
+
+            <h3><i class="fas fa-code"></i> TDZ in Different Scenarios</h3>
+
+            <h4><strong>Scenario 1: Block Scope TDZ</strong></h4>
+            <div class="code-annotation">
+                <pre>let x = 'global';
+
+{
+  console.log(x);  // ReferenceError! TDZ for block-scoped x
+  let x = 'block';
+}
+
+// Engine knows x will be declared in this block,
+// so the global x is shadowed from the start of the block</pre>
+            </div>
+
+            <h4><strong>Scenario 2: TDZ in Closures</strong></h4>
+            <div class="code-annotation">
+                <pre>function outer() {
+  console.log(x);  // ReferenceError! x is in closure's TDZ
+
+  function inner() {
+    let x = 5;
+  }
+}
+
+// The inner x is hoisted in inner's scope,
+// but accessing it from outer during its TDZ is an error</pre>
+            </div>
+
+            <h4><strong>Scenario 3: TDZ with Default Parameters</strong></h4>
+            <div class="code-annotation">
+                <pre>function func(a = b, b = 2) {
+  console.log(a, b);
+}
+
+func();  // ReferenceError! b is in TDZ when a's default is evaluated
+
+// Parameters are processed left to right
+// When a's default (which references b) is evaluated, b is not yet initialized</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 7: INTERVIEW MASTERY -->
+            <h2><i class="fas fa-graduation-cap"></i> Part 7: Interview Mastery - Top 10 Questions</h2>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 1: Explain the difference between stack and heap memory</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> The stack stores primitive values and execution contexts in LIFO order. It's fast, automatic, and fixed-size. The heap stores reference types (objects, arrays) in a dynamic, unordered manner. Stack is per-thread and local; heap is global and shared. When you assign a primitive, you copy the value. When you assign an object, you copy the reference (pointer).</p>
+                    <p><strong>What they're testing:</strong> Understanding of memory models, scoping, and how JavaScript engines work.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 2: What causes a stack overflow?</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> Stack overflow occurs when the call stack exceeds its maximum size, typically 10,000-20,000 frames depending on the engine. The most common cause is infinite recursion without a base case. Each function call pushes a new frame onto the stack; if these frames never pop, you hit the limit.</p>
+                    <p><strong>Prevention:</strong> Convert recursion to iteration, use the trampoline pattern, or batch process with <code>setTimeout</code> to let the stack clear.</p>
+                    <p><strong>What they're testing:</strong> Deep understanding of call stack mechanics and optimization techniques.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 3: How does hoisting work?</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> During the creation phase of execution context, the engine scans the code and:</p>
+                    <ul>
+                        <li>Hoists function declarations completely (name + body)</li>
+                        <li>Hoists variable declarations but initializes them to <code>undefined</code></li>
+                        <li>Does NOT hoist assignments or function expressions</li>
+                    </ul>
+                    <p><strong>Key insight:</strong> Hoisting is not moving code around; it's about the creation phase happening before the execution phase.</p>
+                    <p><strong>What they're testing:</strong> Understanding of the two-phase execution model.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 4: What is the temporal dead zone?</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> The temporal dead zone (TDZ) is the period between a block's entry and the point where a <code>let</code> or <code>const</code> variable is declared. During TDZ, the variable is hoisted but uninitialized. Accessing it throws a <code>ReferenceError</code>, not <code>undefined</code>.</p>
+                    <p><strong>Why it matters:</strong> <code>let</code> and <code>const</code> are not initialized to <code>undefined</code> like <code>var</code>. The TDZ prevents accidental use before declaration.</p>
+                    <p><strong>What they're testing:</strong> Distinction between <code>var</code>, <code>let</code>, and <code>const</code> hoisting behavior.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 5: Can you identify a memory leak in this code?</strong>
+                <div class="answer">
+                    <p><strong>Common leaks:</strong></p>
+                    <ul>
+                        <li>Event listeners never removed</li>
+                        <li>Timers/intervals never cleared</li>
+                        <li>Global variable references to large objects</li>
+                        <li>Circular references (in old browsers)</li>
+                        <li>Detached DOM nodes still referenced</li>
+                    </ul>
+                    <p><strong>Detection:</strong> Use Chrome DevTools Memory tab → Take heap snapshot → Compare snapshots over time → Look for growing object counts.</p>
+                    <p><strong>What they're testing:</strong> Practical debugging skills and knowledge of common patterns.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 6: What is a closure and how does it affect memory?</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> A closure is a function that retains references to variables from its outer scope even after the outer function returns. The lexical environment (scope) is kept alive in the heap.</p>
+                    <p><strong>Memory implication:</strong> Closures keep their parent scope alive. If you create many closures with heavy outer scopes, you can cause memory bloat.</p>
+                    <pre>function createClosures() {
+  const largeArray = new Array(1000000);
+  const closures = [];
+
+  for (let i = 0; i < 1000; i++) {
+    closures.push(() => largeArray[i]);  // Each closure captures largeArray!
+  }
+
+  return closures;  // All 1000 closures keep largeArray alive
+}</pre>
+                    <p><strong>What they're testing:</strong> Understanding of closures, scope chains, and memory management.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 7: What is the call stack and how is it used in debugging?</strong>
+                <div class="answer">
+                    <p><strong>Answer:</strong> The call stack is a LIFO data structure that tracks function calls. When a function is called, a frame is pushed; when it returns, the frame is popped.</p>
+                    <p><strong>Debugging:</strong> Error stack traces show the call stack at the moment of error. Reading a stack trace tells you:</p>
+                    <ul>
+                        <li>The exact function where the error occurred</li>
+                        <li>The chain of calls that led to that function</li>
+                        <li>The file name and line number for each call</li>
+                    </ul>
+                    <p><strong>What they're testing:</strong> Practical debugging skills and call stack understanding.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 8: How do primitives and reference types differ in memory?</strong>
+                <div class="answer">
+                    <p><strong>Primitives (Stack):</strong> Values are stored directly on the stack. Assignment copies the value.</p>
+                    <p><strong>References (Heap):</strong> Values are stored on the heap; pointers are on the stack. Assignment copies the pointer.</p>
+                    <pre>let a = 5;
+let b = a;
+b = 10;
+console.log(a);  // 5 (unchanged)
+
+let obj1 = {val: 5};
+let obj2 = obj1;
+obj2.val = 10;
+console.log(obj1.val);  // 10 (changed!)</pre>
+                    <p><strong>What they're testing:</strong> Deep understanding of data types and memory models.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 9: Explain how garbage collection works in JavaScript</strong>
+                <div class="answer">
+                    <p><strong>Algorithm:</strong> Modern engines use mark-and-sweep with generational collection.</p>
+                    <ol>
+                        <li>Mark Phase: Start from root (global object), mark all reachable objects</li>
+                        <li>Sweep Phase: Unreachable (unmarked) objects are deallocated</li>
+                        <li>Compact Phase: Move objects to fill gaps, improve cache locality</li>
+                    </ol>
+                    <p><strong>Generational:</strong> V8 splits objects into young and old generations. Young generation is collected frequently (most objects die young), old generation less frequently.</p>
+                    <p><strong>What they're testing:</strong> Knowledge of GC algorithms and memory management strategies.</p>
+                </div>
+            </div>
+
+            <div class="interview-qa">
+                <strong><i class="fas fa-question-circle"></i> Question 10: How would you optimize this recursive function to prevent stack overflow?</strong>
+                <div class="answer">
+                    <p><strong>Approach 1: Convert to iteration</strong></p>
+                    <pre>// Recursive
+function sum(arr, i = 0) {
+  return i === arr.length ? 0 : arr[i] + sum(arr, i + 1);
+}
+
+// Iterative (O(1) space, no stack overflow)
+function sumIterative(arr) {
+  let total = 0;
+  for (let i = 0; i < arr.length; i++) {
+    total += arr[i];
+  }
+  return total;
+}</pre>
+                    <p><strong>Approach 2: Use trampoline pattern</strong></p>
+                    <p><strong>Approach 3: Batch with setTimeout</strong></p>
+                    <p><strong>What they're testing:</strong> Problem-solving, algorithm optimization, and system limits knowledge.</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 8: BROWSER DEVTOOLS -->
+            <h2><i class="fas fa-tools"></i> Part 8: Chrome DevTools Memory Profiling Tutorial</h2>
+
+            <h3><i class="fas fa-search"></i> Step 1: Open Chrome DevTools</h3>
+            <ol class="icon-list">
+                <li><i class="fas fa-arrow-right"></i> Press <code>F12</code> or right-click → "Inspect" → Click "Memory" tab</li>
+            </ol>
+
+            <h3><i class="fas fa-camera"></i> Step 2: Take a Heap Snapshot</h3>
+            <ol class="icon-list">
+                <li><i class="fas fa-arrow-right"></i> Click "Take snapshot" button</li>
+                <li><i class="fas fa-arrow-right"></i> Interact with your app</li>
+                <li><i class="fas fa-arrow-right"></i> Take another snapshot</li>
+                <li><i class="fas fa-arrow-right"></i> Compare snapshots to find what grew</li>
+            </ol>
+
+            <h3><i class="fas fa-line-chart"></i> Step 3: Allocation Timeline</h3>
+            <div class="code-annotation">
+                <p><strong>Watch memory allocation over time:</strong></p>
+                <pre>1. Select "Allocation Timeline" tab
+2. Click blue circle to start recording
+3. Use your app
+4. Click again to stop
+5. See timeline of allocations
+6. Hover over spikes to see what was allocated</pre>
+            </div>
+
+            <h3><i class="fas fa-bug"></i> Step 4: Find Memory Leaks</h3>
+            <div class="code-annotation">
+                <pre>// Example: Finding a leak
+const leakyFunction = () => {
+  const largeData = new Array(1000000).fill('leak');
+
+  setInterval(() => {
+    console.log(largeData.length);
+  }, 1000);
+};
+
+leakyFunction();
+
+// In DevTools:
+// 1. Take snapshot A (baseline)
+// 2. Wait 10 seconds (memory grows)
+// 3. Take snapshot B
+// 4. Switch to "Comparison" view
+// 5. Look for "Detached" objects or growing counts</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 9: JAVASCRIPT ENGINE DETAILS -->
+            <h2><i class="fas fa-cog"></i> Part 9: JavaScript Engine Implementation Details</h2>
+
+            <h3><i class="fas fa-chart-bar"></i> V8 Engine (Chrome, Node.js)</h3>
+            <div class="section-card">
+                <h3><i class="fas fa-star"></i> Key Characteristics</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>JIT Compilation:</strong> Compiles hot code to machine code for speed</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Generational GC:</strong> Young generation collected frequently, old generation rarely</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>No TCO:</strong> Tail call optimization not implemented (doesn't optimize tail calls)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Stack Limit:</strong> ~10,000-15,000 frames</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Internals:</strong> Hidden classes for object layout, inline caching for method calls</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-chart-bar"></i> SpiderMonkey Engine (Firefox)</h3>
+            <div class="section-card">
+                <h3><i class="fas fa-star"></i> Key Characteristics</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>JIT Compilation:</strong> IonMonkey compiler for optimization</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Generational GC:</strong> Similar to V8 but with different thresholds</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>TCO Support:</strong> Tail call optimization IS implemented in strict mode</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Stack Limit:</strong> ~20,000-25,000 frames (higher than V8)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Known for:</strong> More memory efficient, good for Firefox</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-chart-bar"></i> JavaScriptCore (Safari, iOS)</h3>
+            <div class="section-card">
+                <h3><i class="fas fa-star"></i> Key Characteristics</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> <strong>LLVM Backend:</strong> Uses LLVM for code generation</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Generational GC:</strong> Markable/Eden pattern</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Stack Limit:</strong> ~8,000-12,000 frames (more conservative)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Known for:</strong> Energy efficiency on mobile devices</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 10: PRACTICAL EXERCISES -->
+            <h2><i class="fas fa-pencil-alt"></i> Part 10: Practice Exercises & Challenges</h2>
+
+            <h3><i class="fas fa-exclamation-circle"></i> Challenge 1: Find the Memory Leak</h3>
+            <div class="problem-box">
+                <h3><i class="fas fa-code"></i> Code with Memory Leak</h3>
+                <pre>class DataProcessor {
+  constructor() {
+    this.cache = [];
+  }
+
+  processData(data) {
+    const processed = data.map(x => x * 2);
+    this.cache.push({ data: processed, time: new Date() });
+
+    document.getElementById('btn').addEventListener('click', () => {
+      console.log(this.cache);
+    });
+  }
+}
+
+const processor = new DataProcessor();
+for (let i = 0; i < 1000; i++) {
+  processor.processData([1, 2, 3, 4, 5]);
+}</pre>
+
+                <h3 style="color: #27ae60;"><i class="fas fa-check-circle"></i> Identify the Issues</h3>
+                <div class="answer" style="background: #d4edda; border-left: 5px solid #27ae60; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                    <p><strong>Issue 1:</strong> Event listener added 1000 times but never removed - each listener keeps the processor in memory</p>
+                    <p><strong>Issue 2:</strong> Cache grows indefinitely without clearing old entries</p>
+                    <p><strong>Issue 3:</strong> Each Date object adds unnecessary memory</p>
+                    <p style="margin-top: 15px;"><strong>Memory impact:</strong> ~1000 listeners × processor reference = massive leak</p>
+                </div>
+
+                <h3 style="color: #27ae60;"><i class="fas fa-check-circle"></i> Fixed Version</h3>
+                <pre>class DataProcessor {
+  constructor() {
+    this.cache = [];
+    this.maxCacheSize = 100;  // Limit cache
+    this.clickHandler = () => console.log(this.cache);
+  }
+
+  processData(data) {
+    const processed = data.map(x => x * 2);
+
+    // Limit cache size
+    this.cache.push({ data: processed });
+    if (this.cache.length > this.maxCacheSize) {
+      this.cache.shift();  // Remove oldest
+    }
+  }
+
+  setupListeners() {
+    const btn = document.getElementById('btn');
+    btn.addEventListener('click', this.clickHandler);
+  }
+
+  cleanup() {
+    const btn = document.getElementById('btn');
+    btn.removeEventListener('click', this.clickHandler);
+  }
+}
+
+const processor = new DataProcessor();
+processor.setupListeners();
+
+// Later: processor.cleanup();</pre>
+            </div>
+
+            <h3><i class="fas fa-exclamation-triangle"></i> Challenge 2: Prevent Stack Overflow</h3>
+            <div class="problem-box">
+                <h3><i class="fas fa-code"></i> Problematic Recursive Code</h3>
+                <pre>// This will overflow for large arrays
+function sumRecursive(arr, i = 0) {
+  if (i === arr.length) return 0;
+  return arr[i] + sumRecursive(arr, i + 1);
+}
+
+sumRecursive(new Array(100000).fill(1));  // Stack overflow!</pre>
+
+                <h3 style="color: #27ae60;"><i class="fas fa-check-circle"></i> Solution 1: Iterative</h3>
+                <pre>function sumIterative(arr) {
+  let total = 0;
+  for (let i = 0; i < arr.length; i++) {
+    total += arr[i];
+  }
+  return total;
+}
+
+sumIterative(new Array(100000).fill(1));  // Works!</pre>
+
+                <h3 style="color: #27ae60;"><i class="fas fa-check-circle"></i> Solution 2: Trampoline Pattern</h3>
+                <pre>function trampoline(fn) {
+  let result = fn();
+  while (typeof result === 'function') {
+    result = result();
+  }
+  return result;
+}
+
+function sumTrampoline(arr, i = 0, acc = 0) {
+  if (i === arr.length) return acc;
+  return () => sumTrampoline(arr, i + 1, acc + arr[i]);
+}
+
+const result = trampoline(() => sumTrampoline(new Array(100000).fill(1)));
+console.log(result);  // Works safely!</pre>
+            </div>
+
+            <h3><i class="fas fa-check-mark"></i> Challenge 3: Memory Efficient Data Structure</h3>
+            <div class="problem-box">
+                <h3><i class="fas fa-code"></i> Create an Object Pool to Reduce GC Pressure</h3>
+                <pre>// Object Pool Pattern - reuse objects instead of creating new ones
+class ObjectPool {
+  constructor(ObjectClass, initialSize = 10) {
+    this.ObjectClass = ObjectClass;
+    this.available = [];
+    this.inUse = new Set();
+
+    for (let i = 0; i < initialSize; i++) {
+      this.available.push(new ObjectClass());
+    }
+  }
+
+  acquire() {
+    let obj;
+    if (this.available.length > 0) {
+      obj = this.available.pop();
+    } else {
+      obj = new this.ObjectClass();  // Create if pool empty
+    }
+    this.inUse.add(obj);
+    return obj;
+  }
+
+  release(obj) {
+    if (this.inUse.has(obj)) {
+      this.inUse.delete(obj);
+      obj.reset?.();  // Optional reset method
+      this.available.push(obj);
+    }
+  }
+}
+
+// Usage:
+class Point {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+  }
+  reset() {
+    this.x = 0;
+    this.y = 0;
+  }
+}
+
+const pool = new ObjectPool(Point, 100);
+
+// Reuse instead of creating:
+for (let i = 0; i < 10000; i++) {
+  const point = pool.acquire();
+  point.x = i;
+  point.y = i * 2;
+
+  // Use point...
+
+  pool.release(point);  // Return for reuse
+}</pre>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- SUMMARY -->
+            <h2><i class="fas fa-trophy"></i> Learning Summary & Key Takeaways</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-brain"></i>
+                    <h4>Execution Context</h4>
+                    <p>Two phases: creation (hoisting) and execution. Understanding this explains most "weird" JavaScript behavior.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-layer-group"></i>
+                    <h4>Memory Models</h4>
+                    <p>Stack for primitives (fast, automatic), heap for objects (dynamic, GC'd). This fundamental distinction underpins all memory behavior.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-list"></i>
+                    <h4>Call Stack</h4>
+                    <p>LIFO data structure for function calls. Understanding this is essential for debugging and preventing stack overflow.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>System Limits</h4>
+                    <p>Know your engine's stack limit (V8: ~15K, Firefox: ~25K). Convert recursion to iteration when needed.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-trash"></i>
+                    <h4>Garbage Collection</h4>
+                    <p>Mark-and-sweep with generational collection. Knowledge of GC helps you write memory-efficient code and debug leaks.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-tools"></i>
+                    <h4>Practical Debugging</h4>
+                    <p>Use Chrome DevTools Memory tab for heap snapshots and allocation timelines. Profiling is your best friend.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-graduation-cap"></i> Essential Concepts to Master</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <strong>Execution Context Phases:</strong> Creation phase does hoisting, execution phase runs code</li>
+                    <li><i class="fas fa-check"></i> <strong>Hoisting Rules:</strong> Functions fully hoisted, vars hoisted as undefined, let/const in TDZ</li>
+                    <li><i class="fas fa-check"></i> <strong>Stack vs Heap:</strong> Stack is fast and small, heap is slow and large</li>
+                    <li><i class="fas fa-check"></i> <strong>Call Stack LIFO:</strong> Functions push when called, pop when they return</li>
+                    <li><i class="fas fa-check"></i> <strong>Stack Overflow Prevention:</strong> Use iteration, TCO, trampoline, or setTimeout batching</li>
+                    <li><i class="fas fa-check"></i> <strong>Memory Leaks:</strong> Forgotten timers, event listeners, globals, detached DOM, circular refs</li>
+                    <li><i class="fas fa-check"></i> <strong>Temporal Dead Zone:</strong> let/const are hoisted but uninitialized (different from var)</li>
+                    <li><i class="fas fa-check"></i> <strong>Garbage Collection:</strong> Mark-and-sweep with generational collection in modern engines</li>
+                    <li><i class="fas fa-check"></i> <strong>Closures & Memory:</strong> Closures keep their scope alive; be careful with large outer scopes</li>
+                    <li><i class="fas fa-check"></i> <strong>DevTools Mastery:</strong> Take snapshots, compare, look for growing detached objects</li>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-arrow-right"></i> Next Steps: Foundation for Stack-Based DSA</h3>
+                <p>This deep understanding of the call stack and memory management is <strong>essential foundation</strong> for learning:</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-arrow-right"></i> Valid Parentheses (Stack pattern)</li>
+                    <li><i class="fas fa-arrow-right"></i> Daily Temperatures (Monotonic Stack)</li>
+                    <li><i class="fas fa-arrow-right"></i> Backtracking algorithms (recursive call stacks)</li>
+                    <li><i class="fas fa-arrow-right"></i> Depth-First Search (explicit vs implicit stacks)</li>
+                    <li><i class="fas fa-arrow-right"></i> Expression evaluation (stack-based parsing)</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>You now have the mental models to understand these advanced patterns!</strong></p>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- FINAL TIPS -->
+            <h2><i class="fas fa-lightbulb"></i> Senior Engineer's Tips & Best Practices</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-code"></i> Write Memory-Aware Code</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Prefer iteration over recursion for large datasets</li>
+                    <li><i class="fas fa-check-circle"></i> Always remove event listeners and timers when done</li>
+                    <li><i class="fas fa-check-circle"></i> Nullify references to large objects when no longer needed</li>
+                    <li><i class="fas fa-check-circle"></i> Use const by default, let for mutable variables, avoid var</li>
+                    <li><i class="fas fa-check-circle"></i> Profile early and often - don't guess about memory usage</li>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h3><i class="fas fa-graduation-cap"></i> Interview Preparation Checklist</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-square"></i> Can you draw the call stack for a nested function call?</li>
+                    <li><i class="fas fa-square"></i> Can you explain hoisting with code examples?</li>
+                    <li><i class="fas fa-square"></i> Can you identify memory leaks in given code?</li>
+                    <li><i class="fas fa-square"></i> Can you convert recursion to iteration?</li>
+                    <li><i class="fas fa-square"></i> Can you use Chrome DevTools to find a leak?</li>
+                    <li><i class="fas fa-square"></i> Can you explain TDZ, closure, and GC?</li>
+                    <li><i class="fas fa-square"></i> Can you explain stack vs heap with examples?</li>
+                    <li><i class="fas fa-square"></i> Can you discuss engine-specific differences (V8 vs SpiderMonkey)?</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- FOOTER with Social Links -->
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 4 - JavaScript Memory & Execution Context Mastery</h3>
+            <p>Master the hidden engine mechanics that separate senior engineers from the rest</p>
+
+            <!-- Social Links in Footer -->
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 18-05-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">🚀 You are now ready for senior-level DSA interviews!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <!-- Watermark for PDF Footer -->
+            <div class="watermark">© Baljeet Gunghas - Confidential Document</div>
+        </div>
+    </div>
+
+    <!-- PDF Download Script -->
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            const downloadContainer = document.querySelector('.download-btn-container');
+            downloadContainer.style.display = 'none';
+
+            alert('📝 Print Settings Instructions:\n\n' +
+                '1. In the print dialog, click "More settings" or ⚙️ icon\n' +
+                '2. Find "Headers and footers" option\n' +
+                '3. UNCHECK "Headers and footers"\n' +
+                '4. Click "Save as PDF"\n\n' +
+                'This will remove the URL and date from the PDF.');
+
+            setTimeout(() => {
+                window.print();
+
+                setTimeout(() => {
+                    downloadContainer.style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

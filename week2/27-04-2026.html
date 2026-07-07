@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Detection & Event Loop Mastery - Week 2</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+
+        .watermark {
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #3498db;
+            opacity: 0.6;
+            padding: 20px;
+            font-weight: bold;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .header-info strong {
+            color: #fff;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 i {
+            font-size: 1.3em;
+            color: #3498db;
+        }
+
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 i {
+            color: #3498db;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        ul,
+        ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: 500;
+            border: 1px solid #bdc3c7;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        .problem-box {
+            background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #bdc3c7;
+            page-break-inside: avoid;
+        }
+
+        .problem-box h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+
+        .problem-box p {
+            color: #34495e;
+        }
+
+        .dry-run {
+            background: #f0fdf4;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 0.95em;
+            color: #1e5631;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d4edda;
+            page-break-inside: avoid;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+        }
+
+        table thead {
+            background: #3498db;
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+            color: #2c3e50;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #ecf0f1;
+            transition: 0.3s;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+
+        .section-card {
+            background: #ecf0f1;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.2);
+            background: #f8f9fa;
+        }
+
+        .section-card h3 {
+            color: #2980b9;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card p {
+            color: #34495e;
+        }
+
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .array-visual {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .array-item {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .array-item.zero {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .array-item.empty {
+            background: #bdc3c7;
+            color: #7f8c8d;
+            opacity: 0.5;
+        }
+
+        .array-item.highlight {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+            text-align: center;
+            transition: all 0.3s ease;
+            page-break-inside: avoid;
+        }
+
+        .feature-box:hover {
+            background: #e8f1f9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .feature-box i {
+            font-size: 2.5em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .feature-box h4 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .comparison-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-item {
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            border: 2px solid #ecf0f1;
+            page-break-inside: avoid;
+        }
+
+        .chart-item strong {
+            color: #2980b9;
+        }
+
+        .chart-item p {
+            color: #34495e;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            margin: 40px 0;
+            page-break-after: avoid;
+        }
+
+        .icon-list {
+            list-style: none;
+        }
+
+        .icon-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #34495e;
+        }
+
+        .icon-list i {
+            color: #3498db;
+            width: 24px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .badge.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .badge.yellow {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .badge.green {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        /* Social Links Styling */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .social-link i {
+            font-size: 1.2em;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link svg {
+            width: 28px;
+            height: 28px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .social-link.github {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        .social-link.github:hover {
+            box-shadow: 0 8px 20px rgba(51, 51, 51, 0.4);
+        }
+
+        .social-link.twitter {
+            background: linear-gradient(135deg, #1da1f2, #1a91da);
+        }
+
+        .social-link.twitter:hover {
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .social-link.linkedin {
+            background: linear-gradient(135deg, #0077b5, #005a9a);
+        }
+
+        .social-link.linkedin:hover {
+            box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4);
+        }
+
+        .social-link.instagram {
+            background: linear-gradient(135deg, #e1306c, #c13584);
+        }
+
+        .social-link.instagram:hover {
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .success-text {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .warning-text {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .error-text {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        /* Print Styles */
+        @page {
+            margin: 0.5cm;
+            size: A4 portrait;
+        }
+
+        @media print {
+            * {
+                box-shadow: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                position: relative;
+            }
+
+            .watermark {
+                display: block !important;
+                text-align: center !important;
+                font-size: 13px !important;
+                color: #3498db !important;
+                opacity: 0.8 !important;
+                padding: 10px 0 !important;
+                font-weight: bold !important;
+                border-top: 1px solid #ddd !important;
+                page-break-inside: avoid !important;
+                margin-top: 20px !important;
+            }
+
+            .download-btn-container {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header {
+                page-break-after: avoid;
+                padding: 20px;
+            }
+
+            .content {
+                padding: 15px 20px;
+            }
+
+            h2 {
+                margin-top: 15px;
+                margin-bottom: 10px;
+                page-break-after: avoid;
+            }
+
+            h3 {
+                page-break-after: avoid;
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+
+            p {
+                margin-bottom: 8px;
+            }
+
+            .section-card {
+                page-break-inside: avoid;
+                border: 1px solid #bdc3c7;
+                margin: 10px 0;
+            }
+
+            .problem-box {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                padding: 15px;
+            }
+
+            .feature-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            pre {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            table {
+                page-break-inside: avoid;
+                margin: 10px 0;
+                font-size: 0.9em;
+            }
+
+            .dry-run {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+                margin: 10px 0;
+            }
+
+            .svg-container {
+                page-break-inside: avoid;
+                margin: 15px 0;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            .social-links {
+                page-break-inside: avoid;
+                margin: 15px 0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .footer {
+                page-break-inside: avoid;
+                margin-top: 20px;
+                padding: 20px;
+            }
+
+            /* Ensure links stay clickable in PDF */
+            a {
+                color: #3498db;
+                text-decoration: underline;
+            }
+
+            /* Hide URL text for social links in print */
+            .social-link[href]::after {
+                content: none !important;
+            }
+
+            .social-link {
+                display: inline-flex;
+                margin: 5px;
+            }
+
+            .social-link::after {
+                content: none;
+            }
+
+            .social-link i {
+                margin-right: 5px;
+            }
+
+            /* Force SVG rendering in PDF */
+            .social-link svg {
+                width: 20px !important;
+                height: 20px !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+            }
+
+            .social-link svg path {
+                fill: white !important;
+                stroke: none !important;
+            }
+
+            .comparison-chart {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Download Button -->
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container" id="content-to-download">
+        <!-- Watermark for PDF -->
+        <div class="watermark">Baljeet Gunghas</div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-code"></i> 🔄
+                </div>
+                <h1>Anagram Detection & Event Loop Mastery</h1>
+                <p>String Comparison & JavaScript Execution Order</p>
+                <div class="header-info">
+                    <p><i class="fas fa-file"></i> <strong>File Name:</strong> 27-04-2026.js</p>
+                    <p><i class="fas fa-calendar"></i> <strong>Week:</strong> Week 2</p>
+                    <p><i class="fas fa-folder"></i> <strong>Path:</strong> week2/27-04-2026.js</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>Focus:</strong> Anagram detection, character frequency counting, JavaScript event loop architecture</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Social Links at Top -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="text-align: center; margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Connect With Me</h3>
+                <div class="social-links">
+                    <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- CONCEPTS SECTION -->
+            <h2><i class="fas fa-book"></i> Key Concepts Covered</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-font"></i>
+                    <h4>Anagram Detection</h4>
+                    <p>Comparing character frequencies</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-calculator"></i>
+                    <h4>ASCII/CharCode</h4>
+                    <p>Character-to-number conversion</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-list"></i>
+                    <h4>Frequency Array</h4>
+                    <p>Fixed-size counting data structure</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-sync-alt"></i>
+                    <h4>Event Loop</h4>
+                    <p>JavaScript execution architecture</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-cube"></i>
+                    <h4>Promises</h4>
+                    <p>Microtask queue behavior</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-wave-square"></i>
+                    <h4>Async/Await</h4>
+                    <p>Asynchronous function execution flow</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- PART 1: ANAGRAM DETECTION -->
+            <h2><i class="fas fa-search"></i> Part 1: Anagram Detection</h2>
+
+            <div class="problem-box">
+                <h3><i class="fas fa-target"></i> Challenge: Check if Two Strings are Anagrams</h3>
+                <p><strong>Definition:</strong> Two strings are anagrams if they contain the same characters with the same frequencies, just in different order.</p>
+                <ul class="icon-list">
+                    <li><i class="fas fa-check-circle"></i> Fundamental string comparison technique</li>
+                    <li><i class="fas fa-check-circle"></i> Tests understanding of character encoding</li>
+                    <li><i class="fas fa-check-circle"></i> Common interview question</li>
+                </ul>
+            </div>
+
+            <h3><i class="fas fa-glasses"></i> Visual Example</h3>
+            <div class="svg-container">
+                <svg width="700" height="200" viewBox="0 0 700 200">
+                    <!-- String 1 -->
+                    <text x="20" y="25" font-size="14" font-weight="bold" fill="#2980b9">String 1: "listen"</text>
+                    <rect x="20" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="40" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">l</text>
+                    <rect x="70" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="90" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">i</text>
+                    <rect x="120" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="140" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">s</text>
+                    <rect x="170" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="190" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">t</text>
+                    <rect x="220" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="240" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">e</text>
+                    <rect x="270" y="40" width="40" height="40" fill="#3498db" rx="3" />
+                    <text x="290" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">n</text>
+
+                    <!-- Arrow -->
+                    <text x="350" y="65" font-size="28" fill="#2980b9" font-weight="bold">→</text>
+
+                    <!-- String 2 -->
+                    <text x="400" y="25" font-size="14" font-weight="bold" fill="#27ae60">String 2: "silent"</text>
+                    <rect x="400" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="420" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">s</text>
+                    <rect x="450" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="470" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">i</text>
+                    <rect x="500" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="520" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">l</text>
+                    <rect x="550" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="570" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">e</text>
+                    <rect x="600" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="620" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">n</text>
+                    <rect x="650" y="40" width="40" height="40" fill="#27ae60" rx="3" />
+                    <text x="670" y="70" font-size="16" font-weight="bold" fill="white" text-anchor="middle">t</text>
+
+                    <!-- Result -->
+                    <text x="200" y="140" font-size="16" font-weight="bold" fill="#27ae60" text-anchor="middle">✓ Same Characters = Anagrams!</text>
+                    <text x="200" y="165" font-size="12" fill="#34495e" text-anchor="middle">Both contain: e, i, l, n, s, t</text>
+                </svg>
+            </div>
+
+            <h3><i class="fas fa-code"></i> isAnagram() Function</h3>
+            <pre>function isAnagram(s, t) {
+  // Anagrams must be same length
+  if (s.length !== t.length) return false;
+
+  // Create frequency array (256 chars in ASCII)
+  let array = new Array(256).fill(0);
+
+  // Increment count for each char in s
+  for (let i = 0; i < s.length; i++) {
+    array[s[i].charCodeAt(0)]++;
+  }
+
+  // Decrement count for each char in t
+  for (let i = 0; i < t.length; i++) {
+    array[t[i].charCodeAt(0)]--;
+  }
+
+  // Check if all counts are 0
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] > 0) return false;
+  }
+
+  return true;
+}</pre>
+
+            <h3><i class="fas fa-terminal"></i> Step-by-Step Execution (Dry Run)</h3>
+            <div class="dry-run">Input: isAnagram("abecde", "aebecd")
+
+Step 1: Length check
+├─ s.length = 6
+├─ t.length = 6
+└─ Continue ✓
+
+Step 2: Create frequency array
+└─ array = [0, 0, 0, ..., 0] (256 zeros)
+
+Step 3: Process string "abecde" (increment)
+├─ 'a' (97): array[97]++ = 1
+├─ 'b' (98): array[98]++ = 1
+├─ 'e' (101): array[101]++ = 1
+├─ 'c' (99): array[99]++ = 1
+├─ 'd' (100): array[100]++ = 1
+└─ 'e' (101): array[101]++ = 2
+
+Step 4: Process string "aebecd" (decrement)
+├─ 'a' (97): array[97]-- = 0
+├─ 'e' (101): array[101]-- = 1
+├─ 'b' (98): array[98]-- = 0
+├─ 'e' (101): array[101]-- = 0
+├─ 'c' (99): array[99]-- = 0
+└─ 'd' (100): array[100]-- = 0
+
+Step 5: Verify all counts are 0
+├─ Loop through all 256 indices
+├─ All non-zero indices found = 0
+└─ Continue ✓
+
+Return: true ✓</div>
+
+            <h3><i class="fas fa-chart-bar"></i> Complexity Analysis</h3>
+            <div class="comparison-chart">
+                <div class="chart-item">
+                    <strong><i class="fas fa-hourglass-end"></i> Time Complexity</strong>
+                    <p style="margin-top: 10px;"><span class="complexity-badge">O(n)</span></p>
+                    <p style="font-size: 0.9em; margin-top: 8px;">Process each string once (3 passes max)</p>
+                </div>
+                <div class="chart-item">
+                    <strong><i class="fas fa-database"></i> Space Complexity</strong>
+                    <p style="margin-top: 10px;"><span class="complexity-badge">O(1)</span></p>
+                    <p style="font-size: 0.9em; margin-top: 8px;">Fixed array of 256 (constant space)</p>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-lightbulb"></i> Key Concepts</h3>
+            <ul class="icon-list">
+                <li><i class="fas fa-code"></i> <strong>charCodeAt():</strong> Returns ASCII code of character (97='a', 122='z')</li>
+                <li><i class="fas fa-list"></i> <strong>Frequency Array:</strong> Fixed size (256) allows O(1) lookups and updates</li>
+                <li><i class="fas fa-check"></i> <strong>Two-Pass Strategy:</strong> First increment, then decrement to verify balance</li>
+                <li><i class="fas fa-star"></i> <strong>Space Optimization:</strong> O(1) because array size is constant regardless of input</li>
+            </ul>
+
+            <h3><i class="fas fa-examples"></i> Test Cases</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Input 1</th>
+                        <th>Input 2</th>
+                        <th>Output</th>
+                        <th>Explanation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>"listen"</td>
+                        <td>"silent"</td>
+                        <td><span class="badge green">true</span></td>
+                        <td>Same characters, different order</td>
+                    </tr>
+                    <tr>
+                        <td>"abc"</td>
+                        <td>"def"</td>
+                        <td><span class="badge red">false</span></td>
+                        <td>No common characters</td>
+                    </tr>
+                    <tr>
+                        <td>"race"</td>
+                        <td>"care"</td>
+                        <td><span class="badge green">true</span></td>
+                        <td>Both have: a, c, e, r</td>
+                    </tr>
+                    <tr>
+                        <td>"ab"</td>
+                        <td>"ba"</td>
+                        <td><span class="badge green">true</span></td>
+                        <td>Perfect anagram pair</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="divider"></div>
+
+            <!-- PART 2: EVENT LOOP -->
+            <h2><i class="fas fa-sync"></i> Part 2: Event Loop Deep Dive</h2>
+
+            <div class="section-card">
+                <h3><i class="fas fa-info-circle"></i> What is the Event Loop?</h3>
+                <p>The event loop is JavaScript's mechanism for managing the execution order of code. It prioritizes synchronous code, then microtasks (promises, async/await), then macrotasks (setTimeout, setInterval).</p>
+            </div>
+
+            <h3><i class="fas fa-diagram"></i> Event Loop Architecture</h3>
+            <div class="svg-container">
+                <svg width="650" height="350" viewBox="0 0 650 350">
+                    <!-- Call Stack -->
+                    <rect x="50" y="20" width="150" height="80" fill="#3498db" rx="5" stroke="#2980b9" stroke-width="2" />
+                    <text x="125" y="45" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Call Stack</text>
+                    <text x="125" y="65" font-size="11" fill="white" text-anchor="middle">(Sync Code)</text>
+                    <text x="125" y="90" font-size="10" fill="#ecf0f1" text-anchor="middle">Executes First</text>
+
+                    <!-- Microtask Queue -->
+                    <rect x="250" y="20" width="150" height="80" fill="#27ae60" rx="5" stroke="#229954" stroke-width="2" />
+                    <text x="325" y="45" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Microtask Queue</text>
+                    <text x="325" y="65" font-size="11" fill="white" text-anchor="middle">(Promises, Async)</text>
+                    <text x="325" y="90" font-size="10" fill="#ecf0f1" text-anchor="middle">High Priority</text>
+
+                    <!-- Macrotask Queue -->
+                    <rect x="450" y="20" width="150" height="80" fill="#e74c3c" rx="5" stroke="#c0392b" stroke-width="2" />
+                    <text x="525" y="45" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Macrotask Queue</text>
+                    <text x="525" y="65" font-size="11" fill="white" text-anchor="middle">(setTimeout, etc)</text>
+                    <text x="525" y="90" font-size="10" fill="#ecf0f1" text-anchor="middle">Lower Priority</text>
+
+                    <!-- Arrows showing flow -->
+                    <path d="M 200 60 L 250 60" stroke="#2980b9" stroke-width="3" fill="none" marker-end="url(#arrowhead)" />
+                    <path d="M 400 60 L 450 60" stroke="#2980b9" stroke-width="3" fill="none" marker-end="url(#arrowhead)" />
+
+                    <!-- Execution Order -->
+                    <text x="20" y="150" font-size="13" font-weight="bold" fill="#2980b9">Execution Order:</text>
+
+                    <rect x="20" y="165" width="600" height="160" fill="#f0f4f8" rx="5" stroke="#3498db" stroke-width="2" />
+
+                    <!-- Step descriptions -->
+                    <text x="40" y="190" font-size="12" font-weight="bold" fill="#2980b9">Phase 1: Synchronous Execution</text>
+                    <text x="50" y="210" font-size="11" fill="#34495e">• All code in the call stack executes immediately</text>
+                    <text x="50" y="227" font-size="11" fill="#34495e">• Blocking operations occur here</text>
+
+                    <text x="40" y="250" font-size="12" font-weight="bold" fill="#27ae60">Phase 2: Microtasks (All of them)</text>
+                    <text x="50" y="270" font-size="11" fill="#34495e">• ALL microtasks execute before any macrotask</text>
+                    <text x="50" y="287" font-size="11" fill="#34495e">• If new microtasks are created, they execute next</text>
+
+                    <text x="40" y="305" font-size="12" font-weight="bold" fill="#e74c3c">Phase 3: One Macrotask (Then repeat)</text>
+                    <text x="50" y="325" font-size="11" fill="#34495e">• Execute ONE macrotask, then check microtasks again</text>
+
+                    <!-- Marker for arrows -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#2980b9" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <h3><i class="fas fa-code"></i> Classic Event Loop Example</h3>
+            <pre>console.log("A");                 // Sync
+
+setTimeout(() => {
+  console.log("B");                 // Macrotask
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("C");                 // Microtask
+});
+
+console.log("D");                   // Sync</pre>
+
+            <h3><i class="fas fa-terminal"></i> Expected Output & Explanation</h3>
+            <div class="dry-run">Output: A → D → C → B
+
+Detailed Breakdown:
+
+Phase 1: SYNCHRONOUS EXECUTION (Call Stack)
+├─ console.log("A") → Executes immediately
+│  Output: A
+├─ setTimeout(...) → NOT executed yet, scheduled to MACROTASK queue
+├─ Promise.then(...) → NOT executed yet, scheduled to MICROTASK queue
+├─ console.log("D") → Executes immediately
+│  Output: D
+└─ Call Stack is now EMPTY
+
+Phase 2: MICROTASK QUEUE (All pending microtasks)
+├─ Promise.then() → Executes now
+│  Output: C
+└─ Microtask queue is now EMPTY
+
+Phase 3: MACROTASK QUEUE
+├─ setTimeout() → Executes now (0ms delay)
+│  Output: B
+└─ Complete!
+
+Final Output Order: A → D → C → B</div>
+
+            <h3><i class="fas fa-code"></i> Async/Await Example</h3>
+            <pre>async function myFunc() {
+  console.log("1");              // Sync
+  await Promise.resolve();        // Pause here
+  console.log("2");              // Resume in microtask
+}
+
+console.log("3");                // Sync
+myFunc();                         // Sync start
+console.log("4");                // Sync</pre>
+
+            <h3><i class="fas fa-terminal"></i> Output: 3 → 1 → 4 → 2</h3>
+            <div class="dry-run">Execution Trace:
+
+Synchronous Phase:
+├─ console.log("3")
+│  Output: 3
+├─ myFunc() called
+│  ├─ console.log("1")
+│  │  Output: 1
+│  └─ await Promise.resolve() → PAUSE (goes to microtask)
+└─ console.log("4")
+   Output: 4
+   Call Stack is now EMPTY
+
+Microtask Phase:
+└─ Resume myFunc() after await
+   ├─ console.log("2")
+   │  Output: 2
+   └─ Function completes
+
+Final Output Order: 3 → 1 → 4 → 2</div>
+
+            <h3><i class="fas fa-comparison"></i> Quick Comparison Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Queue</th>
+                        <th>Priority</th>
+                        <th>Examples</th>
+                        <th>Blocking</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge">Sync</span></td>
+                        <td>Call Stack</td>
+                        <td><span class="badge red">1st</span></td>
+                        <td>Direct code, loops, functions</td>
+                        <td>Yes - blocks everything</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge green">Microtask</span></td>
+                        <td>Microtask Queue</td>
+                        <td><span class="badge green">2nd</span></td>
+                        <td>Promises, async/await, MutationObserver</td>
+                        <td>Can starve macrotasks</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge yellow">Macrotask</span></td>
+                        <td>Macrotask Queue</td>
+                        <td><span class="badge yellow">3rd</span></td>
+                        <td>setTimeout, setInterval, setImmediate</td>
+                        <td>Happens after all microtasks</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3><i class="fas fa-lightbulb"></i> Key Takeaways</h3>
+            <div class="section-card">
+                <ul class="icon-list">
+                    <li><i class="fas fa-check"></i> <strong>Always synchronous first:</strong> Code runs immediately unless explicitly made async</li>
+                    <li><i class="fas fa-check"></i> <strong>Promises execute in microtask:</strong> They run BEFORE setTimeout, even if setTimeout is 0ms</li>
+                    <li><i class="fas fa-check"></i> <strong>await = microtask:</strong> Async/await is syntactic sugar over promises</li>
+                    <li><i class="fas fa-check"></i> <strong>Microtask starvation:</strong> If microtasks keep generating new microtasks, macrotasks never run</li>
+                    <li><i class="fas fa-check"></i> <strong>Event loop repeats:</strong> After one macrotask, check ALL microtasks, then next macrotask</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- SUMMARY -->
+            <h2><i class="fas fa-trophy"></i> Learning Summary</h2>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-search-plus"></i>
+                    <h4>Anagram Detection</h4>
+                    <p>Efficient character frequency counting with fixed-size arrays</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-sync"></i>
+                    <h4>Event Loop</h4>
+                    <p>Understanding JavaScript's execution priority system</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>O(1) Space Optimization</h4>
+                    <p>Using fixed-size arrays for constant space complexity</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-brain"></i>
+                    <h4>Async Patterns</h4>
+                    <p>Mastering microtasks vs macrotasks execution order</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER with Social Links -->
+        <div class="footer">
+            <h3><i class="fas fa-star"></i> Week 2 - Anagram Detection & Event Loop</h3>
+            <p>Master efficient string comparison and JavaScript's asynchronous execution model</p>
+
+            <!-- Social Links in Footer -->
+            <div class="social-links" style="margin: 25px 0;">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 27-04-2026.js | <i class="fas fa-calendar"></i> Generated: 2026-07-07</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">Master string comparison and JavaScript's execution model!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong></p>
+            </div>
+
+            <!-- Watermark for PDF Footer -->
+            <div class="watermark">© Baljeet Gunghas - Confidential Document</div>
+        </div>
+    </div>
+
+    <!-- PDF Download Script using Print Method -->
+    <script>
+        function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
+
+            // Hide the download button before printing
+            const downloadContainer = document.querySelector('.download-btn-container');
+            downloadContainer.style.display = 'none';
+
+            // Show instructions
+            alert('Print Settings Instructions:\n\n' +
+                '1. In the print dialog, click "More settings" or ⚙ icon\n' +
+                '2. Find "Headers and footers" option\n' +
+                '3. UNCHECK "Headers and footers"\n' +
+                '4. Click "Save as PDF"\n\n' +
+                'This will remove the URL and date from the PDF.');
+
+            // Trigger print dialog
+            setTimeout(() => {
+                window.print();
+
+                // Restore button after print
+                setTimeout(() => {
+                    downloadContainer.style.display = 'flex';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 500);
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

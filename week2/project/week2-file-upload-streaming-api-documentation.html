@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 2 - File Upload Streaming API - Complete Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .download-btn-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .header-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .header-info {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-info p {
+            color: #ffffff;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        h2 {
+            color: #229954;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #27ae60;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #229954;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        h4 {
+            color: #34495e;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #34495e;
+        }
+
+        code {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid #27ae60;
+        }
+
+        .section-card {
+            background: #f0f4f8;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table thead {
+            background: #27ae60;
+            color: white;
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge.green {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .badge.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .badge.yellow {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #27ae60;
+            text-align: center;
+        }
+
+        .feature-box h4 {
+            color: #229954;
+            margin-bottom: 10px;
+        }
+
+        .feature-box p {
+            color: #34495e;
+            font-size: 0.95em;
+        }
+
+        .question-box {
+            background: #ecf0f1;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #229954;
+        }
+
+        .question-box strong {
+            color: #229954;
+            font-size: 1.05em;
+        }
+
+        .answer {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #27ae60;
+        }
+
+        .answer p {
+            margin-bottom: 8px;
+        }
+
+        .answer ul {
+            margin-left: 20px;
+        }
+
+        .answer li {
+            margin-bottom: 6px;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .difficulty.beginner {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .difficulty.intermediate {
+            background: #fef5e7;
+            color: #f39c12;
+        }
+
+        .difficulty.advanced {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .difficulty.expert {
+            background: #ebdef0;
+            color: #8e44ad;
+        }
+
+        .flow-diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .step {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin: 0 10px;
+            color: #27ae60;
+            font-size: 1.5em;
+        }
+
+        .improvement-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .improvement-list li {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f0f4f8;
+            border-left: 4px solid #27ae60;
+            border-radius: 4px;
+        }
+
+        .improvement-list li:before {
+            content: "✓ ";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .architecture-box {
+            background: #f0f4f8;
+            border: 2px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .footer p {
+            color: #ecf0f1;
+            margin: 10px 0;
+        }
+
+        .footer h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 25px 0;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .social-link i {
+            font-size: 1.3em;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link.github:hover {
+            box-shadow: 0 8px 20px rgba(52, 73, 94, 0.4);
+        }
+
+        .social-link.twitter:hover {
+            box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .social-link.linkedin:hover {
+            box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4);
+        }
+
+        .social-link.instagram:hover {
+            box-shadow: 0 8px 20px rgba(225, 48, 108, 0.4);
+        }
+
+        .footer-text {
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @page {
+            margin: 0.5cm;
+            size: A4 portrait;
+        }
+
+        @media print {
+            * {
+                box-shadow: none !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .download-btn-container {
+                display: none;
+            }
+
+            .header {
+                page-break-inside: avoid;
+                padding: 30px;
+                margin: 0;
+            }
+
+            .header h1 {
+                font-size: 2em;
+                margin-bottom: 8px;
+            }
+
+            .header p {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+
+            .header-info {
+                background: rgba(255, 255, 255, 0.15);
+                padding: 15px;
+                margin-top: 15px;
+                border-radius: 8px;
+            }
+
+            .header-info p {
+                font-size: 0.9em;
+                margin: 5px 0;
+            }
+
+            .content {
+                padding: 30px;
+            }
+
+            .footer {
+                page-break-inside: avoid;
+                margin-top: 20px;
+                padding: 20px;
+            }
+
+            .social-link span {
+                display: inline;
+            }
+
+            h2 {
+                page-break-after: avoid;
+                margin-top: 20px;
+            }
+
+            h3 {
+                page-break-after: avoid;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+
+            .question-box {
+                page-break-inside: avoid;
+                margin: 15px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="download-btn-container">
+        <button class="download-btn" onclick="window.print()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-stream"></i>
+                </div>
+                <h1>File Upload Streaming API - Week 2 Project</h1>
+                <p>Complete Implementation Guide, Architecture Analysis & Interview Preparation</p>
+                <div class="header-info">
+                    <p><strong>📚 Comprehensive Guide for:</strong> Node.js Streaming, Backpressure Handling & System Design</p>
+                    <p>50+ Interview Questions | Stream Architecture | Production Best Practices</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- SECTION 1: PROJECT OVERVIEW -->
+            <h2><i class="fas fa-folder-open"></i> Section 1: Project Overview</h2>
+
+            <h3>1.1 What is This Project?</h3>
+            <p>This is a <strong>Node.js file upload streaming API</strong> that demonstrates professional-grade file upload handling using Busboy for parsing multipart form data and stream piping for zero-memory-bloat uploads.</p>
+
+            <p><strong>Key Technology Stack:</strong></p>
+            <ul>
+                <li><strong>Node.js HTTP Module:</strong> Built-in server without Express framework</li>
+                <li><strong>Busboy Library:</strong> Efficient multipart form data parser</li>
+                <li><strong>Streams API:</strong> Handle file data as streams (Readable → Transform → Writable)</li>
+                <li><strong>File System (fs):</strong> Disk persistence</li>
+            </ul>
+
+            <h3>1.2 Why Is This Important?</h3>
+            <p>This project demonstrates <strong>"40 LPA Code"</strong> (companies paying ₹40+ lakhs/year expect this level of understanding):</p>
+            <ul>
+                <li><strong>Memory Efficiency:</strong> Handles multi-gigabyte files with constant 4MB memory usage</li>
+                <li><strong>Concurrency:</strong> Can handle 50+ simultaneous uploads without crashing</li>
+                <li><strong>Production Readiness:</strong> Includes error handling, cleanup logic, and edge cases</li>
+                <li><strong>System Design Knowledge:</strong> Understanding of Backpressure, streams, and event-driven architecture</li>
+            </ul>
+
+            <h3>1.3 Current Architecture</h3>
+            <div class="flow-diagram">
+                <div class="step">HTTP POST Request</div>
+                <div class="arrow">→</div>
+                <div class="step">Busboy Parse</div>
+                <div class="arrow">→</div>
+                <div class="step">File Event</div>
+                <div class="arrow">→</div>
+                <div class="step">Validation</div>
+                <div class="arrow">→</div>
+                <div class="step">Pipe to Disk</div>
+                <div class="arrow">→</div>
+                <div class="step">Finish Event</div>
+                <div class="arrow">→</div>
+                <div class="step">Response</div>
+            </div>
+
+            <!-- SECTION 2: CODE BREAKDOWN -->
+            <h2><i class="fas fa-code"></i> Section 2: Deep Code Analysis</h2>
+
+            <h3>2.1 Initialization & Server Setup</h3>
+            <pre>const server = http.createServer((req, res) => {
+  if (req.method === "POST") {
+    const busboy = Busboy({ headers: req.headers });
+    // ... handling logic
+  }
+});</pre>
+
+            <p><strong>What's Happening:</strong></p>
+            <ul>
+                <li><code>http.createServer()</code> creates a native Node.js server (no framework overhead)</li>
+                <li><code>Busboy({ headers: req.headers })</code> initializes parser with request headers</li>
+                <li>Busboy automatically detects multipart boundary and content types from headers</li>
+            </ul>
+
+            <h3>2.2 File Event & Streaming</h3>
+            <pre>busboy.on("file", (name, file, info) => {
+  const { filename, mimeType } = info;
+  const saveTo = path.join(__dirname, "uploads", filename);
+
+  const writeStream = fs.createWriteStream(saveTo);
+  file.pipe(writeStream);
+});</pre>
+
+            <p><strong>Key Concepts:</strong></p>
+            <ul>
+                <li><strong>Readable Stream:</strong> <code>file</code> is a readable stream from Busboy</li>
+                <li><strong>Writable Stream:</strong> <code>writeStream</code> writes to disk</li>
+                <li><strong>Pipe:</strong> Connects readable to writable, data flows automatically</li>
+                <li><strong>Backpressure:</strong> Node.js automatically pauses reading if disk is slow</li>
+            </ul>
+
+            <h3>2.3 Validation & Error Handling</h3>
+            <pre>const allowedTypes = [
+  "image/jpeg", "image/png", "application/pdf",
+  "text/plain", "video/mp4"
+];
+
+if (!allowedTypes.includes(mimeType)) {
+  file.resume(); // Consume stream without saving
+  if (!res.writableEnded) {
+    res.writeHead(400);
+    res.end(`Error: ${mimeType} not supported`);
+  }
+  return;
+}</pre>
+
+            <p><strong>Critical Learning Points:</strong></p>
+            <ul>
+                <li><strong>WHY file.resume()?</strong> If you don't consume a stream, it stays paused forever, connection hangs</li>
+                <li><strong>WHY res.writableEnded check?</strong> Prevents ERR_HTTP_HEADERS_SENT if multiple files upload</li>
+                <li><strong>MIME Type Validation:</strong> Checks actual file type, not just extension</li>
+            </ul>
+
+            <h3>2.4 Cleanup Logic (Request Abort Handling)</h3>
+            <pre>req.on("aborted", () => {
+  if (!isUploadComplete) {
+    writeStream.destroy();
+    fs.unlink(saveTo, (err) => {
+      if (!err) console.log(`Deleted: ${filename}`);
+    });
+  }
+});</pre>
+
+            <p><strong>Why This Is Critical:</strong></p>
+            <ul>
+                <li>User closes browser mid-upload → request aborts</li>
+                <li>Without cleanup → partial file stays on disk</li>
+                <li><code>writeStream.destroy()</code> closes the file handle</li>
+                <li><code>fs.unlink()</code> removes incomplete file</li>
+            </ul>
+
+            <h3>2.5 The Finish Event</h3>
+            <pre>busboy.on("finish", () => {
+  res.writeHead(200, { Connection: "close" });
+  res.end("Upload successful!");
+});</pre>
+
+            <p><strong>Timing:</strong> This fires AFTER all files finish uploading and all fields are parsed.</p>
+
+            <!-- SECTION 3: STREAM FUNDAMENTALS -->
+            <h2><i class="fas fa-water"></i> Section 3: Stream & Backpressure Fundamentals</h2>
+
+            <h3>3.1 What Is Backpressure?</h3>
+            <p><strong>Analogy:</strong> Imagine a fire hydrant (readable source) and a bucket (writable destination).</p>
+            <ul>
+                <li><strong>Without Backpressure:</strong> Hydrant blasts at max → bucket overflows → water everywhere (RAM fills)</li>
+                <li><strong>With Backpressure:</strong> If bucket is full, hydrant automatically slows down</li>
+            </ul>
+
+            <p><strong>In Code:</strong> <code>file.pipe(writeStream)</code> handles backpressure automatically:</p>
+            <pre>// What happens internally:
+if (!writeStream.write(chunk)) {
+  // Disk is slow, pause reading
+  file.pause();
+}
+
+writeStream.on('drain', () => {
+  // Disk caught up, resume reading
+  file.resume();
+});</pre>
+
+            <h3>3.2 Why Not Buffer Everything?</h3>
+            <pre>// BAD: Loads entire file into memory
+const data = await req.body; // 700MB file = 700MB RAM!
+
+// GOOD: Stream approach
+file.pipe(writeStream); // Only 4MB RAM regardless of file size!</pre>
+
+            <h3>3.3 Backpressure in Production</h3>
+            <p><strong>Memory Profile:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>File Size</th>
+                        <th>Memory Used</th>
+                        <th>Max Concurrent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Buffer (fs.writeFile)</td>
+                        <td>1GB</td>
+                        <td>1GB</td>
+                        <td>10 users (10GB RAM)</td>
+                    </tr>
+                    <tr>
+                        <td>Stream (file.pipe)</td>
+                        <td>1GB</td>
+                        <td>4MB</td>
+                        <td>1000+ users (4GB RAM)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- SECTION 4: POTENTIAL IMPROVEMENTS -->
+            <h2><i class="fas fa-lightbulb"></i> Section 4: Production Improvements</h2>
+
+            <h3>4.1 Add Progress Tracking</h3>
+            <pre>// Track upload progress
+let uploadedBytes = 0;
+file.on("data", (chunk) => {
+  uploadedBytes += chunk.length;
+  const progress = (uploadedBytes / file.size) * 100;
+  console.log(`${progress.toFixed(2)}% uploaded`);
+});
+file.pipe(writeStream);</pre>
+
+            <h3>4.2 File Size Limits</h3>
+            <pre>const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+busboy.on("file", (name, file, info) => {
+  let uploadedSize = 0;
+
+  file.on("data", (chunk) => {
+    uploadedSize += chunk.length;
+    if (uploadedSize > MAX_FILE_SIZE) {
+      file.destroy();
+      fs.unlink(saveTo, () => {});
+      res.writeHead(413);
+      res.end("File too large");
+    }
+  });
+});</pre>
+
+            <h3>4.3 Chunked Uploads for Resumability</h3>
+            <pre>// Support resumable uploads
+const uploadId = req.query.uploadId;
+const chunkIndex = req.query.chunkIndex;
+const saveTo = path.join(__dirname, "chunks", `${uploadId}-${chunkIndex}`);
+
+// Save chunk
+file.pipe(fs.createWriteStream(saveTo));
+
+// When all chunks done, reassemble
+if (allChunksReceived) {
+  reassembleFile(uploadId);
+}</pre>
+
+            <h3>4.4 Virus Scanning Integration</h3>
+            <pre>const ClamAV = require("clamav.js");
+
+busboy.on("file", (name, file, info) => {
+  const tmpFile = path.join(__dirname, "temp", filename);
+  const writeStream = fs.createWriteStream(tmpFile);
+
+  file.pipe(writeStream);
+
+  writeStream.on("finish", async () => {
+    const result = await ClamAV.scanFile(tmpFile);
+    if (result.isInfected) {
+      fs.unlink(tmpFile, () => {});
+      console.log("Virus detected!");
+    }
+  });
+});</pre>
+
+            <h3>4.5 Database Logging</h3>
+            <pre>// Log all uploads
+busboy.on("finish", async () => {
+  await UploadLog.create({
+    userId: req.userId,
+    fileName: filename,
+    fileSize: fileSize,
+    mimeType: mimeType,
+    status: "success",
+    timestamp: new Date()
+  });
+
+  res.end("Upload logged!");
+});</pre>
+
+            <!-- SECTION 5: INTERVIEW QUESTIONS -->
+            <h2><i class="fas fa-graduation-cap"></i> Section 5: 50+ Interview Questions</h2>
+
+            <!-- BEGINNER LEVEL -->
+            <h3>BEGINNER LEVEL (5 Questions)</h3>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Beginner</span>
+                <strong>Q1: What is Busboy and why do we use it?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> Busboy is a Node.js module that parses multipart/form-data streams (file uploads).</p>
+                    <p><strong>WHY:</strong> Raw HTTP requests send files as binary streams. Busboy separates file data from form fields and emits events as data arrives.</p>
+                    <p><strong>HOW:</strong> It listens to the request stream and fires "file" and "field" events as it encounters them in the multipart message.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Beginner</span>
+                <strong>Q2: What does file.pipe(writeStream) do?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> Pipe connects a readable stream to a writable stream, automatically flowing data from one to the other.</p>
+                    <p><strong>WHY:</strong> Handles backpressure automatically - if the disk is slow, reading pauses; when disk catches up, reading resumes.</p>
+                    <p><strong>HOW:</strong> Node.js internally uses a highWaterMark (default 16KB) to buffer data. When buffer fills, it signals pause to the readable stream.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Beginner</span>
+                <strong>Q3: Why do we call file.resume() on invalid uploads?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> file.resume() tells Node.js to consume the stream without saving it (discards data).</p>
+                    <p><strong>WHY:</strong> If you don't consume a paused stream, Node.js waits forever for someone to read it. The connection hangs, socket stays open, server resources leak.</p>
+                    <p><strong>HOW:</strong> Calling resume() on a rejected file immediately drains all incoming bytes into the void, freeing up resources.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Beginner</span>
+                <strong>Q4: What does res.writableEnded check?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> Checks if the HTTP response has already been sent to the client.</p>
+                    <p><strong>WHY:</strong> If you try to call res.writeHead() or res.end() twice, Node.js throws ERR_HTTP_HEADERS_SENT and crashes.</p>
+                    <p><strong>HOW:</strong> In multipart uploads with multiple files, if the first file is rejected, we send an error response. When Busboy processes the second file, we must check if response already sent before sending again.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Beginner</span>
+                <strong>Q5: What is the difference between streaming and buffering?</strong>
+                <div class="answer">
+                    <p><strong>STREAMING:</strong> Process data as it arrives, small chunks at a time (constant memory).</p>
+                    <p><strong>BUFFERING:</strong> Load entire file into memory before processing (memory = file size).</p>
+                    <p><strong>EXAMPLE:</strong> 1GB file - streaming uses 4MB RAM, buffering uses 1GB RAM.</p>
+                </div>
+            </div>
+
+            <!-- INTERMEDIATE LEVEL -->
+            <h3>INTERMEDIATE LEVEL (15 Questions)</h3>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q6: Walk me through the complete upload flow from client to disk</strong>
+                <div class="answer">
+                    <p><strong>FLOW:</strong></p>
+                    <ol>
+                        <li>Client sends POST request with multipart/form-data containing file</li>
+                        <li>req.pipe(busboy) - Node.js pipes incoming HTTP data to Busboy</li>
+                        <li>Busboy parses multipart boundary, emits "file" event</li>
+                        <li>Event handler validates MIME type</li>
+                        <li>If valid: file.pipe(writeStream) - data flows to disk</li>
+                        <li>If invalid: file.resume() - data discarded</li>
+                        <li>writeStream emits "finish" when done</li>
+                        <li>All files done → busboy emits "finish" → res.end()</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q7: Explain backpressure and how pipe() handles it</strong>
+                <div class="answer">
+                    <p><strong>BACKPRESSURE:</strong> When data source is faster than destination, buffer fills up.</p>
+                    <p><strong>PIPE HANDLING:</strong></p>
+                    <ul>
+                        <li>writeStream.write(chunk) returns true if buffer has space</li>
+                        <li>If it returns false → pipe automatically calls file.pause()</li>
+                        <li>When writeStream drains → 'drain' event fires → pipe calls file.resume()</li>
+                    </ul>
+                    <p><strong>RESULT:</strong> Memory stays constant, no overflow.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q8: What happens if a user closes their browser mid-upload?</strong>
+                <div class="answer">
+                    <p><strong>WITHOUT CLEANUP:</strong> Partial file remains on disk, wasting storage.</p>
+                    <p><strong>WITH CLEANUP (our code):</strong></p>
+                    <ul>
+                        <li>Browser close triggers 'aborted' event on req</li>
+                        <li>req.on('aborted', ...) listener fires</li>
+                        <li>If upload not complete: writeStream.destroy() stops writing</li>
+                        <li>fs.unlink() removes partial file</li>
+                    </ul>
+                    <p><strong>RESULT:</strong> Clean disk state, no orphaned files.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q9: How does the code prevent ERR_HTTP_HEADERS_SENT?</strong>
+                <div class="answer">
+                    <p><strong>PROBLEM:</strong> If first file is invalid, we send 400 response. Then Busboy processes second file and tries to send response again → crash.</p>
+                    <p><strong>SOLUTION:</strong></p>
+                    <pre>if (!res.writableEnded) {
+  res.writeHead(400);
+  res.end(`Error: ...`);
+}</pre>
+                    <p>Check if response already sent before trying to send it.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q10: What is highWaterMark and why does it matter?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> Default buffer size before backpressure triggers (default 16KB for readable, 16KB for writable).</p>
+                    <p><strong>WHY:</strong> Too small → too many pause/resume events; too large → memory spike.</p>
+                    <p><strong>TUNING:</strong> For file uploads, can increase to 64KB or 256KB for better throughput.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q11: How would you handle multiple file uploads in one request?</strong>
+                <div class="answer">
+                    <p><strong>CURRENT:</strong> Busboy fires multiple "file" events, one per file.</p>
+                    <p><strong>HANDLING:</strong> Each file event gets its own writeStream, validation, and cleanup listener.</p>
+                    <p><strong>CHALLENGE:</strong> Must not send response until ALL files done → that's why busboy.on('finish') exists.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q12: Why use native Node.js http module instead of Express?</strong>
+                <div class="answer">
+                    <p><strong>ADVANTAGES:</strong></p>
+                    <ul>
+                        <li>No framework overhead → faster, leaner code</li>
+                        <li>Direct stream control → better for advanced piping</li>
+                        <li>Lower memory footprint</li>
+                    </ul>
+                    <p><strong>DISADVANTAGES:</strong> More manual work (routing, middleware), harder to scale to large apps.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q13: How would you add file size validation?</strong>
+                <div class="answer">
+                    <p><strong>APPROACH:</strong></p>
+                    <pre>const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+let uploadedSize = 0;
+
+file.on('data', (chunk) => {
+  uploadedSize += chunk.length;
+  if (uploadedSize > MAX_SIZE) {
+    file.destroy();
+    fs.unlink(saveTo, () => {});
+    res.writeHead(413);
+    res.end('File too large');
+  }
+});</pre>
+                    <p>Track bytes as they arrive, reject early before full upload completes.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q14: What's the difference between error and finish events?</strong>
+                <div class="answer">
+                    <p><strong>ERROR:</strong> Fires when stream encounters an error (disk full, permission denied, etc.)</p>
+                    <p><strong>FINISH:</strong> Fires when stream successfully closes and all data written.</p>
+                    <p><strong>BOTH:</strong> Must clean up resources in both cases.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q15: How does MIME type validation work?</strong>
+                <div class="answer">
+                    <p><strong>SOURCE:</strong> MIME type comes from Content-Type header in multipart message.</p>
+                    <p><strong>LIMITATION:</strong> User can rename file or manipulate headers → not 100% secure.</p>
+                    <p><strong>IMPROVEMENT:</strong> Use magic bytes (file signature) to verify actual file type, not just extension/header.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q16: What is Connection: close header?</strong>
+                <div class="answer">
+                    <p><strong>WHAT:</strong> Tells client to close connection after response sent.</p>
+                    <p><strong>WHY:</strong> Ensures server resources released, no hanging connections.</p>
+                    <p><strong>ALTERNATIVE:</strong> Keep-Alive for connection reuse (good for multiple requests, bad for uploads).</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q17: How would you track upload progress?</strong>
+                <div class="answer">
+                    <p><strong>SERVER TRACKING:</strong></p>
+                    <pre>let uploadedBytes = 0;
+file.on('data', (chunk) => {
+  uploadedBytes += chunk.length;
+  console.log(`${uploadedBytes} bytes received`);
+});</pre>
+                    <p><strong>CLIENT NOTIFICATION:</strong> Could use WebSocket to emit progress events to client in real-time.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q18: What edge cases can break this code?</strong>
+                <div class="answer">
+                    <p><strong>EDGE CASES:</strong></p>
+                    <ul>
+                        <li>uploads/ folder doesn't exist → fs.createWriteStream fails</li>
+                        <li>Disk full during write → writeStream error event</li>
+                        <li>Permission denied on uploads folder → EACCES error</li>
+                        <li>Filename with path traversal (../) → could write outside uploads folder</li>
+                        <li>Very large files → might exceed timeout</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q19: How would you add resumable uploads?</strong>
+                <div class="answer">
+                    <p><strong>CHUNK-BASED APPROACH:</strong></p>
+                    <ul>
+                        <li>Split file into 5MB chunks on client</li>
+                        <li>Each chunk sent with uploadId and chunkIndex</li>
+                        <li>Server saves chunks separately (uploads/upload-123-0, uploads/upload-123-1, etc.)</li>
+                        <li>If upload interrupted, client resends only failed chunks</li>
+                        <li>When all chunks received, reassemble into final file</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty intermediate">Intermediate</span>
+                <strong>Q20: What's the scalability of this server?</strong>
+                <div class="answer">
+                    <p><strong>MEMORY PER REQUEST:</strong> ~4MB (stream buffer)</p>
+                    <p><strong>WITH 1GB RAM:</strong> Can handle ~250 concurrent uploads</p>
+                    <p><strong>WITH 4GB RAM:</strong> Can handle ~1000 concurrent uploads</p>
+                    <p><strong>BOTTLENECK:</strong> Usually disk I/O or network bandwidth, not memory.</p>
+                </div>
+            </div>
+
+            <!-- ADVANCED LEVEL -->
+            <h3>ADVANCED LEVEL (15 Questions)</h3>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q21: Design a distributed file upload system handling 10M concurrent users</strong>
+                <div class="answer">
+                    <p><strong>ARCHITECTURE:</strong></p>
+                    <ul>
+                        <li>Load Balancer (round-robin) → multiple upload servers</li>
+                        <li>Each server runs streaming API (this code)</li>
+                        <li>All upload to shared S3/Google Cloud Storage (multi-region)</li>
+                        <li>Database logs all uploads (MongoDB/PostgreSQL)</li>
+                        <li>Message queue (RabbitMQ) for post-upload processing (virus scan, thumbnail generation)</li>
+                    </ul>
+                    <p><strong>PER SERVER:</strong> ~1000 concurrent uploads with 4GB RAM</p>
+                    <p><strong>FOR 10M:</strong> Need ~10,000 servers (or auto-scaling)</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q22: How would you implement end-to-end encryption?</strong>
+                <div class="answer">
+                    <p><strong>FLOW:</strong></p>
+                    <ul>
+                        <li>Client generates random encryption key (AES-256)</li>
+                        <li>Client encrypts file before uploading</li>
+                        <li>Server receives encrypted bytes, saves to disk as-is</li>
+                        <li>Server NEVER sees plaintext file</li>
+                        <li>Client stores encryption key securely</li>
+                        <li>To download: Server sends encrypted file, client decrypts</li>
+                    </ul>
+                    <p><strong>BENEFIT:</strong> Even if server hacked, files remain encrypted.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q23: Compare single-threaded vs multi-threaded upload servers</strong>
+                <div class="answer">
+                    <p><strong>SINGLE-THREADED (Node.js):</strong></p>
+                    <ul>
+                        <li>All uploads handled by one thread</li>
+                        <li>Event loop manages concurrency (not parallelism)</li>
+                        <li>Scales well for I/O-bound operations (network, disk)</li>
+                    </ul>
+                    <p><strong>MULTI-THREADED (Java):</strong></p>
+                    <ul>
+                        <li>One thread per upload</li>
+                        <li>True parallelism on multi-core CPUs</li>
+                        <li>Higher resource overhead per connection</li>
+                    </ul>
+                    <p><strong>WINNER FOR FILE UPLOADS:</strong> Node.js (I/O-bound, better resource efficiency)</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q24: How would you implement server-side file deduplication?</strong>
+                <div class="answer">
+                    <p><strong>HASH-BASED APPROACH:</strong></p>
+                    <pre>// As data arrives, compute SHA-256
+const hash = crypto.createHash('sha256');
+file.on('data', (chunk) => {
+  hash.update(chunk);
+});
+
+busboy.on('finish', () => {
+  const fileHash = hash.digest('hex');
+
+  // Check if file already exists
+  const existing = await Files.findOne({ hash: fileHash });
+  if (existing) {
+    // Create hard-link instead of duplicate
+    fs.link(existing.path, newPath);
+    res.end('Uploaded (deduplicated)');
+  } else {
+    // Save normally
+    await Files.create({ hash, path: newPath });
+  }
+});</pre>
+                    <p><strong>SAVINGS:</strong> 30-90% storage reduction for repeated uploads.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q25: Design a chunked, resumable upload system</strong>
+                <div class="answer">
+                    <p><strong>PROTOCOL:</strong></p>
+                    <ul>
+                        <li>Client initiates upload → gets uploadId</li>
+                        <li>Client splits file into 5MB chunks</li>
+                        <li>POSTs each chunk: /upload/{uploadId}/{chunkIndex}</li>
+                        <li>Server saves to temp: chunks/{uploadId}-{index}</li>
+                        <li>Client sends: /complete/{uploadId}/{totalChunks}</li>
+                        <li>Server reassembles chunks into final file</li>
+                        <li>If interrupted: Client retries failed chunks only</li>
+                    </ul>
+                    <p><strong>BENEFIT:</strong> Resume from last chunk, not from beginning.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q26: How would you add virus scanning at scale?</strong>
+                <div class="answer">
+                    <p><strong>ARCHITECTURE:</strong></p>
+                    <ul>
+                        <li>Upload server receives file, saves to quarantine folder</li>
+                        <li>Enqueue scan job to message queue (RabbitMQ)</li>
+                        <li>Scanner worker picks up job, runs ClamAV scan</li>
+                        <li>If clean: move to permanent storage</li>
+                        <li>If infected: delete and log incident</li>
+                    </ul>
+                    <p><strong>BENEFIT:</strong> Upload returns immediately, scan happens async. Doesn't block user.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q27: Explain backpressure handling in depth</strong>
+                <div class="answer">
+                    <p><strong>SCENARIO:</strong> 100Mbps internet, 50Mbps disk write.</p>
+                    <p><strong>WITHOUT BACKPRESSURE:</strong></p>
+                    <ul>
+                        <li>Network buffer fills with 50Mbps of unwritten data</li>
+                        <li>Server RAM fills to 500MB, 1GB, crashes</li>
+                    </ul>
+                    <p><strong>WITH BACKPRESSURE (our code):</strong></p>
+                    <ul>
+                        <li>writeStream buffer fills</li>
+                        <li>file.pipe() detects write() returned false</li>
+                        <li>Calls file.pause() → network read pauses</li>
+                        <li>When disk catches up, writeStream emits 'drain'</li>
+                        <li>pipe() calls file.resume() → network read resumes</li>
+                        <li>Memory stays constant at ~4MB</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q28: How would you implement upload quotas per user?</strong>
+                <div class="answer">
+                    <p><strong>QUOTA CHECK:</strong></p>
+                    <pre>const MAX_STORAGE_PER_USER = 100 * 1024 * 1024; // 100MB
+
+busboy.on('file', async (name, file, info) => {
+  const user = await Users.findById(userId);
+  const usedStorage = user.totalUploadedBytes;
+
+  if (usedStorage >= MAX_STORAGE_PER_USER) {
+    file.resume(); // Discard
+    res.writeHead(507); // Insufficient Storage
+    res.end('Quota exceeded');
+    return;
+  }
+
+  // Track size as data arrives
+  file.on('data', (chunk) => {
+    usedStorage += chunk.length;
+    if (usedStorage > MAX_STORAGE_PER_USER) {
+      file.destroy();
+      res.writeHead(507);
+      res.end('Quota exceeded mid-upload');
+    }
+  });
+});</pre>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q29: How would you handle upload timeouts?</strong>
+                <div class="answer">
+                    <p><strong>APPROACH:</strong></p>
+                    <pre>const UPLOAD_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+req.on('aborted', cleanup);
+req.on('error', cleanup);
+
+const timeout = setTimeout(() => {
+  console.log('Upload timeout - killing request');
+  req.socket.destroy();
+}, UPLOAD_TIMEOUT);</pre>
+                    <p><strong>CONSIDERATIONS:</strong></p>
+                    <ul>
+                        <li>Different timeout for different file sizes</li>
+                        <li>Large files (>1GB) might need 1+ hour</li>
+                        <li>Resume capability better than timeout rejection</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q30: Design multi-region upload with automatic failover</strong>
+                <div class="answer">
+                    <p><strong>ARCHITECTURE:</strong></p>
+                    <ul>
+                        <li>Upload servers in US, EU, APAC regions</li>
+                        <li>Client connects to nearest region (geo-IP)</li>
+                        <li>Each region uploads to local S3 + replicates to backup region</li>
+                        <li>If primary region down, DNS failover to secondary</li>
+                    </ul>
+                    <p><strong>BENEFITS:</strong> Low latency + high availability.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q31: How would you add compression to reduce bandwidth?</strong>
+                <div class="answer">
+                    <p><strong>APPROACH 1: Client-side compression</strong></p>
+                    <pre>// Client compresses before upload
+const compressed = await gzip(file);
+// Upload compressed file</pre>
+
+                    <p><strong>APPROACH 2: Stream compression</strong></p>
+                    <pre>const zlib = require('zlib');
+file.pipe(zlib.createGzip()).pipe(writeStream);</pre>
+
+                    <p><strong>TRADEOFF:</strong> CPU usage increases, network usage decreases. Usually worth it for 50%+ size reduction.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q32: How would you implement rate limiting per IP?</strong>
+                <div class="answer">
+                    <p><strong>APPROACH:</strong></p>
+                    <pre>const rateLimit = {}; // IP -> requests in last minute
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  if (!rateLimit[ip]) rateLimit[ip] = [];
+
+  // Remove old entries
+  rateLimit[ip] = rateLimit[ip].filter(t => now - t < 60000);
+
+  if (rateLimit[ip].length >= 10) { // Max 10/minute
+    return false;
+  }
+
+  rateLimit[ip].push(now);
+  return true;
+}</pre>
+                    <p><strong>PRODUCTION:</strong> Use Redis for distributed rate limiting across multiple servers.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q33: Compare direct storage vs CDN for uploads</strong>
+                <div class="answer">
+                    <p><strong>DIRECT (S3):</strong></p>
+                    <ul>
+                        <li>All uploads to main S3 bucket</li>
+                        <li>Downloads served from CloudFront CDN</li>
+                        <li>Low latency for nearby users, slow for far users</li>
+                    </ul>
+                    <p><strong>EDGE UPLOAD (Cloudflare):</strong></p>
+                    <ul>
+                        <li>Upload to nearest Cloudflare edge location</li>
+                        <li>Replicated to origin automatically</li>
+                        <li>Fast uploads globally</li>
+                    </ul>
+                    <p><strong>RECOMMENDATION:</strong> Edge upload for global users, direct for local.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q34: How would you add metadata extraction?</strong>
+                <div class="answer">
+                    <p><strong>METADATA EXTRACTION:</strong></p>
+                    <pre>// Extract EXIF data from image
+const ExifParser = require('exif-parser');
+
+writeStream.on('finish', () => {
+  const parser = ExifParser.create(fs.readFileSync(saveTo));
+  const result = parser.getResult();
+
+  // Save metadata
+  await Files.updateOne({ _id: fileId }, {
+    metadata: {
+      cameraMake: result.tags.Make,
+      cameraModel: result.tags.Model,
+      dateTime: result.tags.DateTime,
+      gps: result.tags.GPSLatitude
+    }
+  });
+});</pre>
+                    <p><strong>USES:</strong> Better search, analytics, privacy (remove GPS data).</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty advanced">Advanced</span>
+                <strong>Q35: Design thumbnail generation pipeline</strong>
+                <div class="answer">
+                    <p><strong>WORKFLOW:</strong></p>
+                    <ul>
+                        <li>User uploads image file</li>
+                        <li>Server saves to permanent storage</li>
+                        <li>Enqueue thumbnail job (message queue)</li>
+                        <li>Worker reads image, generates 200x200 thumbnail</li>
+                        <li>Save thumbnail to same bucket</li>
+                        <li>Update DB with thumbnail URL</li>
+                    </ul>
+                    <p><strong>BENEFIT:</strong> Async, doesn't block upload response.</p>
+                </div>
+            </div>
+
+            <!-- EXPERT LEVEL -->
+            <h3>EXPERT LEVEL (15 Questions)</h3>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q36: Explain the complete memory model of Node.js streams</strong>
+                <div class="answer">
+                    <p><strong>V8 HEAP:</strong></p>
+                    <ul>
+                        <li>JavaScript objects, strings, arrays live here</li>
+                        <li>Garbage collected automatically</li>
+                        <li>Default: 1.4GB limit</li>
+                    </ul>
+                    <p><strong>BUFFER POOL:</strong></p>
+                    <ul>
+                        <li>Streams allocate chunks here (outside V8 heap)</li>
+                        <li>More efficient for binary data</li>
+                        <li>Still subject to backpressure</li>
+                    </ul>
+                    <p><strong>HIGHWATERMARK:</strong> Tuning point where backpressure activates (default 16KB readable, 16KB writable).</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q37: Design a peer-to-peer file upload system</strong>
+                <div class="answer">
+                    <p><strong>PROTOCOL:</strong></p>
+                    <ul>
+                        <li>User uploads to server (torrent-like)</li>
+                        <li>Server creates metadata: file hash, chunk hashes</li>
+                        <li>Other peers download chunks from each other + server</li>
+                        <li>Peers verify chunk hashes for integrity</li>
+                        <li>When majority of chunks downloaded from peers, disconnect from server</li>
+                    </ul>
+                    <p><strong>BENEFIT:</strong> Reduces server bandwidth 50-80%, faster downloads.</p>
+                    <p><strong>TECHNOLOGY:</strong> WebRTC, IPFS, or BitTorrent protocol.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q38: How would you implement streaming to multiple destinations simultaneously?</strong>
+                <div class="answer">
+                    <p><strong>APPROACH:</strong></p>
+                    <pre>// Pipe same file to multiple destinations
+const streams = [
+  fs.createWriteStream('uploads/file.jpg'),
+  s3Uploader.createWriteStream(),
+  backupStorageStream
+];
+
+// Use PassThrough to duplicate stream
+const { PassThrough } = require('stream');
+
+file.pipe(streams[0]);
+file.pipe(streams[1]);
+file.pipe(streams[2]);
+
+// Or use multiplex library
+const multiplex = require('multiplex');
+file.pipe(multiplex(streams));</pre>
+                    <p><strong>BENEFIT:</strong> Replicate to S3, backup, archive in one pass.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q39: Design a compliance-aware file storage system (GDPR/HIPAA)</strong>
+                <div class="answer">
+                    <p><strong>GDPR REQUIREMENTS:</strong></p>
+                    <ul>
+                        <li>User can request all data</li>
+                        <li>User can request deletion (right to be forgotten)</li>
+                        <li>Data minimization (don't collect unnecessary data)</li>
+                        <li>Encryption at rest + in transit</li>
+                    </ul>
+                    <p><strong>HIPAA REQUIREMENTS (healthcare):</strong></p>
+                    <ul>
+                        <li>End-to-end encryption mandatory</li>
+                        <li>Audit logs required (who accessed what, when)</li>
+                        <li>Data breach notification within 60 days</li>
+                        <li>Data retention policies</li>
+                    </ul>
+                    <p><strong>IMPLEMENTATION:</strong> Encryption key per user, audit logging to secure DB, anonymization pipeline.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q40: How would you build a real-time collaborative upload editor?</strong>
+                <div class="answer">
+                    <p><strong>ARCHITECTURE:</strong></p>
+                    <ul>
+                        <li>Multiple users upload files concurrently</li>
+                        <li>Uses WebSocket for real-time updates</li>
+                        <li>Operational transformation (OT) for conflict resolution</li>
+                        <li>Server maintains single source of truth (canonical version)</li>
+                    </ul>
+                    <p><strong>FLOW:</strong></p>
+                    <ul>
+                        <li>User A uploads chunk 1</li>
+                        <li>User B uploads chunk 2 (simultaneously)</li>
+                        <li>Server merges chunks using OT</li>
+                        <li>Both users see merged version in real-time</li>
+                    </ul>
+                    <p><strong>TECHNOLOGY:</strong> Yjs, Automerge, or custom OT implementation.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q41: Explain the CAP theorem in context of distributed file uploads</strong>
+                <div class="answer">
+                    <p><strong>CAP THEOREM:</strong> Can't have all three of: Consistency, Availability, Partition tolerance.</p>
+                    <p><strong>FOR FILE UPLOADS:</strong></p>
+                    <ul>
+                        <li><strong>Consistency:</strong> All replicas see same file version (slow, strong consistency)</li>
+                        <li><strong>Availability:</strong> Upload always succeeds (fast, eventual consistency)</li>
+                        <li><strong>Partition Tolerance:</strong> System works if network partitions</li>
+                    </ul>
+                    <p><strong>CHOICE:</strong> Most systems pick AP (Availability + Partition). Allow temporary inconsistency, resolve later.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q42: Design blockchain-based file integrity verification</strong>
+                <div class="answer">
+                    <p><strong>FLOW:</strong></p>
+                    <ul>
+                        <li>File uploaded, compute SHA-256 hash</li>
+                        <li>Store file hash on blockchain (immutable)</li>
+                        <li>Later: recompute hash, compare with blockchain</li>
+                        <li>If matches → file not tampered with</li>
+                    </ul>
+                    <p><strong>BENEFITS:</strong></p>
+                    <ul>
+                        <li>Tamper-proof audit trail</li>
+                        <li>Legal admissibility (courts accept blockchain timestamps)</li>
+                    </ul>
+                    <p><strong>COST:</strong> ~$0.01-0.50 per hash storage on Ethereum.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q43: How would you detect and prevent DoS attacks on upload endpoint?</strong>
+                <div class="answer">
+                    <p><strong>ATTACKS:</strong></p>
+                    <ul>
+                        <li>Send huge files to fill disk</li>
+                        <li>Send many small files to exhaust connections</li>
+                        <li>Send incomplete data, tie up resources</li>
+                    </ul>
+                    <p><strong>DEFENSES:</strong></p>
+                    <ul>
+                        <li>Rate limiting per IP/user</li>
+                        <li>File size limits with early rejection</li>
+                        <li>Timeout for idle connections</li>
+                        <li>Monitor: request rate, unique IPs, error rates</li>
+                        <li>CloudFlare/AWS Shield for DDoS mitigation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q44: Compare pull-based vs push-based file upload architectures</strong>
+                <div class="answer">
+                    <p><strong>PUSH (Our code):</strong> Client sends file directly to server.</p>
+                    <ul>
+                        <li>Simple, immediate feedback</li>
+                        <li>Client initiates transfer</li>
+                        <li>Lower latency for small files</li>
+                    </ul>
+                    <p><strong>PULL:</strong> Server requests file from client.</p>
+                    <ul>
+                        <li>Server controls timing</li>
+                        <li>Better for scheduled batch uploads</li>
+                        <li>Server can throttle to avoid overload</li>
+                    </ul>
+                    <p><strong>HYBRID:</strong> Push for interactive, pull for batch/scheduled.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q45: Design a machine learning pipeline for upload anomaly detection</strong>
+                <div class="answer">
+                    <p><strong>FEATURES:</strong></p>
+                    <ul>
+                        <li>File size distribution</li>
+                        <li>Upload time of day</li>
+                        <li>Frequency (upload rate)</li>
+                        <li>File types (sudden change = suspicious)</li>
+                        <li>Source IP geolocation</li>
+                    </ul>
+                    <p><strong>ML MODEL:</strong> Isolation Forest or Local Outlier Factor (LOF) for unsupervised anomaly detection.</p>
+                    <p><strong>ACTION:</strong> Flag suspicious uploads for review or quarantine.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q46: How would you optimize for petabyte-scale storage?</strong>
+                <div class="answer">
+                    <p><strong>CHALLENGES:</strong></p>
+                    <ul>
+                        <li>Single disk can't store 1PB</li>
+                        <li>Network bandwidth exhausted</li>
+                        <li>Searching/indexing becomes impossible</li>
+                    </ul>
+                    <p><strong>SOLUTIONS:</strong></p>
+                    <ul>
+                        <li><strong>Sharding:</strong> Hash filename mod 1000 → store in server 0-999</li>
+                        <li><strong>Replication:</strong> 3-way replica per server for redundancy</li>
+                        <li><strong>Tiering:</strong> Hot data (SSD) vs cold data (tape)</li>
+                        <li><strong>Compression:</strong> 50-80% reduction for text/logs</li>
+                        <li><strong>Deduplication:</strong> 30-90% reduction for repeated data</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q47: Design a file upload system for IoT devices with poor connectivity</strong>
+                <div class="answer">
+                    <p><strong>CHALLENGES:</strong></p>
+                    <ul>
+                        <li>2G/3G bandwidth (50-500 Kbps)</li>
+                        <li>Frequent disconnections</li>
+                        <li>Battery life critical</li>
+                    </ul>
+                    <p><strong>SOLUTIONS:</strong></p>
+                    <ul>
+                        <li><strong>Chunked uploads:</strong> Resume from last checkpoint</li>
+                        <li><strong>Compression:</strong> Reduce data size 80%+</li>
+                        <li><strong>Delta sync:</strong> Only send changed bytes, not full file</li>
+                        <li><strong>Offline-first:</strong> Queue uploads, send when WiFi available</li>
+                        <li><strong>Progressive upload:</strong> Return result as data arrives (don't wait for all)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q48: Explain quantum computing threats to file upload security</strong>
+                <div class="answer">
+                    <p><strong>THREATS:</strong></p>
+                    <ul>
+                        <li>RSA encryption breakable in polynomial time (current: exponential)</li>
+                        <li>File hashes (SHA-256) vulnerable to collision attacks</li>
+                    </ul>
+                    <p><strong>POST-QUANTUM SOLUTIONS:</strong></p>
+                    <ul>
+                        <li>Lattice-based encryption (Kyber, Dilithium)</li>
+                        <li>Hash-based signatures (SPHINCS)</li>
+                        <li>NIST standardization in progress</li>
+                    </ul>
+                    <p><strong>TIMELINE:</strong> Quantum threat 10-20 years away, start transitioning now.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q49: Design multi-tenancy isolation for file storage</strong>
+                <div class="answer">
+                    <p><strong>ISOLATION LEVELS:</strong></p>
+                    <ul>
+                        <li><strong>Namespace Isolation:</strong> Different paths per tenant</li>
+                        <li><strong>Database Isolation:</strong> Separate DB per tenant (most secure)</li>
+                        <li><strong>Encryption Isolation:</strong> Each tenant has own encryption key</li>
+                        <li><strong>Network Isolation:</strong> Separate VPC per tenant (AWS)</li>
+                    </ul>
+                    <p><strong>VERIFICATION:</strong> Tenant A cannot read Tenant B's files via path traversal, permission elevation, or key reuse.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty expert">Expert</span>
+                <strong>Q50: Compare QUIC vs TCP for file uploads</strong>
+                <div class="answer">
+                    <p><strong>TCP:</strong> Industry standard, 50+ years mature.</p>
+                    <ul>
+                        <li>3-way handshake overhead</li>
+                        <li>Head-of-line blocking (one lost packet blocks all)</li>
+                        <li>Proven, widely supported</li>
+                    </ul>
+                    <p><strong>QUIC (HTTP/3):</strong> Modern, Google-developed.</p>
+                    <ul>
+                        <li>0-RTT connection reuse</li>
+                        <li>Multiplexing without head-of-line blocking</li>
+                        <li>Connection migration (mobile users)</li>
+                        <li>5-10% faster uploads in poor networks</li>
+                    </ul>
+                    <p><strong>RECOMMENDATION:</strong> QUIC for mobile/IoT, TCP for stability.</p>
+                </div>
+            </div>
+
+            <!-- BEHAVIORAL QUESTIONS -->
+            <h3>BEHAVIORAL QUESTIONS (5 Questions)</h3>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Behavioral</span>
+                <strong>B1: "Tell me about a time you debugged a complex stream/upload issue"</strong>
+                <div class="answer">
+                    <p><strong>WHAT TO SAY:</strong> Tell a specific story (real or realistic) that demonstrates:</p>
+                    <ul>
+                        <li>Problem identification (memory leak, stream hanging, etc.)</li>
+                        <li>Debugging approach (logs, profiling, testing)</li>
+                        <li>Solution (backpressure handling, cleanup, error handling)</li>
+                        <li>Outcome (performance improvement, 50% memory reduction)</li>
+                    </ul>
+                    <p><strong>EXAMPLE STORY:</strong> "Our upload server was crashing after 1000 concurrent uploads. I profiled and found streams weren't being cleaned up on error. Added proper destroy() and unlink() calls. Problem solved."</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Behavioral</span>
+                <strong>B2: "How do you handle production incidents with uploads?"</strong>
+                <div class="answer">
+                    <p><strong>PROCESS:</strong></p>
+                    <ul>
+                        <li><strong>Immediate:</strong> Check logs, identify if memory/disk/timeout issue</li>
+                        <li><strong>Diagnosis:</strong> Is it code bug or infrastructure? (vs vs 50GB disk full)</li>
+                        <li><strong>Mitigation:</strong> Quick fix vs rollback</li>
+                        <li><strong>Postmortem:</strong> What failed? How to prevent?</li>
+                    </ul>
+                    <p><strong>EXAMPLE:</strong> "Upload timeout due to increased traffic. Quick fix: increased highWaterMark from 16KB to 256KB. Longer term: auto-scaling."</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Behavioral</span>
+                <strong>B3: "How do you balance security vs performance in file uploads?"</strong>
+                <div class="answer">
+                    <p><strong>TRADEOFFS:</strong></p>
+                    <ul>
+                        <li><strong>Virus scan:</strong> 500ms delay per file, detects malware</li>
+                        <li><strong>Encryption:</strong> 10% CPU overhead, protects data</li>
+                        <li><strong>Validation:</strong> Check file signatures (not just extension)</li>
+                    </ul>
+                    <p><strong>STRATEGY:</strong> Critical security features always on (encryption, validation). Nice-to-have (virus scan, compression) can be async.</p>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Behavioral</span>
+                <strong>B4: "How would you handle a user's file upload not completing?"</strong>
+                <div class="answer">
+                    <p><strong>USER EXPERIENCE:</strong></p>
+                    <ul>
+                        <li>Show clear error message (not server error trace)</li>
+                        <li>Suggest action: retry, check file size, check connection</li>
+                        <li>Save partial upload for resume (if implemented)</li>
+                    </ul>
+                    <p><strong>BACKEND:</strong></p>
+                    <ul>
+                        <li>Log upload failure with user ID, file size, error</li>
+                        <li>Clean up partial files automatically</li>
+                        <li>Monitor failure rate (if >5%, investigate)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <span class="difficulty beginner">Behavioral</span>
+                <strong>B5: "How do you stay current with file upload best practices?"</strong>
+                <div class="answer">
+                    <p><strong>LEARNING SOURCES:</strong></p>
+                    <ul>
+                        <li>Read Node.js stream docs, GitHub issues</li>
+                        <li>Study popular projects (IPFS, Syncthing, Resilio)</li>
+                        <li>Follow AWS/Google Cloud best practices</li>
+                        <li>Participate in communities (Hacker News, Dev.to)</li>
+                    </ul>
+                    <p><strong>EXPERIMENTATION:</strong> Build side projects, benchmark improvements, write blog posts.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <h3><i class="fas fa-stream"></i> Week 2 - File Upload Streaming API Complete Guide</h3>
+            <p>Master Node.js streaming, backpressure handling, and production-grade architecture</p>
+
+            <!-- Social Links in Footer -->
+            <div class="social-links">
+                <a href="https://github.com/BaljeetGunghas" target="_blank" class="social-link github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://x.com/BaljeetGunghas" target="_blank" class="social-link twitter">
+                    <i class="fab fa-twitter"></i>
+                    <span>X (Twitter)</span>
+                </a>
+                <a href="https://www.linkedin.com/in/dev-baljeet-gunghas-b6698421b" target="_blank" class="social-link linkedin">
+                    <i class="fab fa-linkedin"></i>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://www.instagram.com/baljeet_gunghas2/" target="_blank" class="social-link instagram">
+                    <i class="fab fa-instagram"></i>
+                    <span>Instagram</span>
+                </a>
+            </div>
+
+            <div class="footer-text">
+                <p><i class="fas fa-file-code"></i> File: 01-05-2026-0Buffer-upload-api.js | <i class="fas fa-calendar"></i> Generated: 2026-07-08</p>
+                <p style="font-size: 0.9em; opacity: 0.9;">🚀 Complete guide to Node.js streaming, backpressure, and scalable file uploads!</p>
+                <p style="font-size: 0.8em; opacity: 0.8; margin-top: 15px;">Created by <strong>Baljeet Gunghas</strong> | Includes 50 interview questions with detailed answers covering what, why, and how</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function downloadPDF() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
